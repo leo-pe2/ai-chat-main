@@ -121,3 +121,13 @@ export async function getChatById(chatId: string): Promise<any> {
   }
   return data;
 }
+
+export async function updateChatTitle(chatId: string, title: string): Promise<void> {
+  const { error } = await supabase
+    .from('chats')
+    .update({ title })
+    .eq('id', chatId);
+  if (error) {
+    throw error;
+  }
+}

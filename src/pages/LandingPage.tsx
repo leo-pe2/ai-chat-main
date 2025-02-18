@@ -16,6 +16,8 @@ import 'katex/dist/katex.min.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { generateChatTitle } from '../services/chatTitleGenerator';
+import { updateChatTitle } from '../services/backendapi';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -110,15 +112,12 @@ const LandingPage: React.FC = () => {
     setInputValue(e.target.value);
   };
 
-  const createNewChat = async (): Promise<string | null> => {
+  const createNewChat = async (title: string): Promise<string | null> => {
     if (!user) return null;
     try {
-      // Get existing chats for this user
-      const chats = await getUserChats(user.id);
-      const newTitle = String(chats.length + 1); // Title as 1, 2, 3...
       const { data, error } = await supabase
         .from('chats')
-        .insert({ user_id: user.id, title: newTitle, content: [], is_visible: true }) // Ensure new chat is visible
+        .insert({ user_id: user.id, title, content: [], is_visible: true })
         .select();
       if (error) {
         console.error('Error creating chat:', error);
@@ -135,7 +134,7 @@ const LandingPage: React.FC = () => {
 
   // New function to handle new chat creation when button is clicked
   const handleNewChat = async () => {
-    const newChatId = await createNewChat();
+    const newChatId = await createNewChat('New Chat');
     if (!newChatId) {
       console.error('Failed to create a new chat.');
     } else {
@@ -148,10 +147,21 @@ const LandingPage: React.FC = () => {
     const trimmedMessage = inputValue.trim();
     if (!trimmedMessage) return;
 
-    // Only create a new chat if conversation is empty and no current chat exists
-    if (conversation.length === 0 && !currentChatId) {
-      const newChatId = await createNewChat();
-      if (!newChatId) return;
+    // If it's the first message, update the chat title if a chat exists, or create one with the generated title
+    if (conversation.length === 0) {
+      const generatedTitle = await generateChatTitle(trimmedMessage);
+      if (currentChatId) {
+        // Edit the existing chat title with the generated title
+        try {
+          await updateChatTitle(currentChatId, generatedTitle);
+        } catch (err) {
+          console.error('Error updating chat title:', err);
+        }
+      } else {
+        // No current chat exists, so create a new chat with the generated title
+        const newChatId = await createNewChat(generatedTitle);
+        if (!newChatId) return;
+      }
     }
 
     // Append user message and update chat content
@@ -182,7 +192,6 @@ const LandingPage: React.FC = () => {
       
       console.log("Sending prompt to model:", selectedModel, modelInput);
       const responseText = await getAIBackendResponse(modelInput, selectedModel);
-      // Optionally, convert remaining [ ] formulas to LaTeX format
       const formattedText = responseText.replace(/\[(.*?)\]/g, '$$$$1$$');
       const botMessage: Message = { sender: 'bot', text: formattedText };
       const newConversation = [...updatedConversation, botMessage];
