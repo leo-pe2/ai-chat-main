@@ -105,6 +105,16 @@ export async function updateChatContent(chatId: string, conversation: any[]): Pr
   }
 }
 
+export async function updateChatTitle(chatId: string, title: string): Promise<void> {
+  const { error } = await supabase
+    .from('chats')
+    .update({ title })
+    .eq('id', chatId);
+  if (error) {
+    throw error;
+  }
+}
+
 export async function getChatById(chatId: string): Promise<any> {
   const { data, error } = await supabase
     .from('chats')
@@ -120,14 +130,4 @@ export async function getChatById(chatId: string): Promise<any> {
     throw error;
   }
   return data;
-}
-
-export async function updateChatTitle(chatId: string, title: string): Promise<void> {
-  const { error } = await supabase
-    .from('chats')
-    .update({ title })
-    .eq('id', chatId);
-  if (error) {
-    throw error;
-  }
 }

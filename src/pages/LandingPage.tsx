@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/navbar';
 import Sidebar from '../components/sidebar';
 import ChatBubble from '../components/ChatBubble';
-import { getAIBackendResponse, getUserChats, updateChatContent, getChatById } from '../services/backendapi';
+import { getAIBackendResponse, getUserChats, updateChatContent, getChatById, updateChatTitle } from '../services/backendapi';
 import { sendDiscordError } from '../services/discordWebhook';
 import { searchTavily } from '../services/tavilySearch';
 import LoginPopup from '../components/LoginPopup';
@@ -17,7 +17,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { generateChatTitle } from '../services/chatTitleGenerator';
-import { updateChatTitle } from '../services/backendapi';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -147,18 +146,18 @@ const LandingPage: React.FC = () => {
     const trimmedMessage = inputValue.trim();
     if (!trimmedMessage) return;
 
-    // If it's the first message, update the chat title if a chat exists, or create one with the generated title
+    // If it's the first message, generate a chat title.
     if (conversation.length === 0) {
       const generatedTitle = await generateChatTitle(trimmedMessage);
       if (currentChatId) {
-        // Edit the existing chat title with the generated title
+        // Update existing chat title
         try {
           await updateChatTitle(currentChatId, generatedTitle);
         } catch (err) {
           console.error('Error updating chat title:', err);
         }
       } else {
-        // No current chat exists, so create a new chat with the generated title
+        // No chat exists, so create a new chat with the generated title
         const newChatId = await createNewChat(generatedTitle);
         if (!newChatId) return;
       }
