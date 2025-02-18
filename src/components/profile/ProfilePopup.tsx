@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/auth';
-import { EnrollMFA } from './EnrollMFA';
+import { supabase } from '../../services/auth';
+import { EnrollMFA } from '../EnrollMFA';
 
 interface ProfilePopupProps {
   user: any; // Adjust type as needed
@@ -154,19 +154,29 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
                 Change Password
               </button>
               {hasMFA ? (
-                <button
-                  disabled
-                  className="w-full px-4 py-3 bg-gray-500 text-white rounded-lg cursor-not-allowed"
-                >
-                  2FA Enabled
-                </button>
+                <div className="group relative">
+                  <button
+                    disabled
+                    className="w-full px-4 py-3 bg-gray-500 text-white rounded-lg cursor-not-allowed"
+                  >
+                    2FA Enabled
+                  </button>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute top-full mt-2 w-full p-2 bg-gray-800 text-white text-sm rounded-lg">
+                    Please contact us to disable 2FA
+                  </div>
+                </div>
               ) : (
-                <button
-                  onClick={() => setShowEnrollMFA(true)}
-                  className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300"
-                >
-                  Configure MFA
-                </button>
+                <div className="group relative">
+                  <button
+                    onClick={() => setShowEnrollMFA(true)}
+                    className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300"
+                  >
+                    Configure 2FA
+                  </button>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute top-full mt-2 w-full p-2 bg-gray-800 text-white text-sm rounded-lg">
+                    Once enabled, you'll need to contact support to disable 2FA
+                  </div>
+                </div>
               )}
             </div>
           )}

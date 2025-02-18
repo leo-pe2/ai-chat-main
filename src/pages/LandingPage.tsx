@@ -6,7 +6,7 @@ import { getAIBackendResponse, getUserChats, updateChatContent, getChatById } fr
 import { sendDiscordError } from '../services/discordWebhook';
 import { searchTavily } from '../services/tavilySearch';
 import LoginPopup from '../components/LoginPopup';
-import ProfilePopup from '../components/ProfilePopup';
+import ProfilePopup from '../components/profile/ProfilePopup';
 import { supabase } from '../services/auth';
 import ResetPasswordPopup from '../components/ResetPasswordPopup';
 import ReactMarkdown from 'react-markdown';
