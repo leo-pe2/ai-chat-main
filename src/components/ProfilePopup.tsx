@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/auth';
-import { EnrollMFA } from './EnrollMFA'; // New import
+import { EnrollMFA } from './EnrollMFA';
 
 interface ProfilePopupProps {
   user: any; // Adjust type as needed
@@ -12,12 +12,58 @@ type CategoryType = 'General' | 'Security' | 'Personalization' | 'Subscription';
 const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
   const [message, setMessage] = useState('');
   const [activeCategory, setActiveCategory] = useState<CategoryType>('General');
-  const [showEnrollMFA, setShowEnrollMFA] = useState(false); // New state to control MFA enrollment popup
+  const [showEnrollMFA, setShowEnrollMFA] = useState(false);
+  const [aalLevel, setAalLevel] = useState('aal1'); // Default
+  const [hasMFA, setHasMFA] = useState(false);
+
+  useEffect(() => {
+    // Force refresh to get updated AAL value.
+    (async () => {
+      const { data: refreshed, error } = await supabase.auth.refreshSession();
+      console.log('Refreshed session:', refreshed, error);
+      const session = refreshed?.session || (await supabase.auth.getSession()).data.session;
+      if (session?.user?.app_metadata?.aal) {
+        setAalLevel(session.user.app_metadata.aal);
+      }
+    })();
+    // Listen to auth state changes.
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change event:', event, session);
+      if (session?.user?.app_metadata?.aal) {
+        setAalLevel(session.user.app_metadata.aal);
+      }
+    });
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const checkMFAStatus = async () => {
+      const { data: factors, error } = await supabase.auth.mfa.listFactors();
+      if (error) {
+        console.error('Error checking MFA status:', error);
+        return;
+      }
+      setHasMFA(factors.totp && factors.totp.length > 0);
+    };
+
+    checkMFAStatus();
+    
+    // Subscribe to auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      checkMFAStatus();
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleChangePassword = async () => {
     setMessage('');
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: window.location.href, // or a specific URL such as "/reset-password"
+      redirectTo: window.location.href,
     });
     if (error) {
       setMessage(`Error: ${error.message}`);
@@ -107,12 +153,21 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
               >
                 Change Password
               </button>
-              <button
-                onClick={() => setShowEnrollMFA(true)} // Updated: open MFA enrollment
-                className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300"
-              >
-                Configure MFA
-              </button>
+              {hasMFA ? (
+                <button
+                  disabled
+                  className="w-full px-4 py-3 bg-gray-500 text-white rounded-lg cursor-not-allowed"
+                >
+                  2FA Enabled
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowEnrollMFA(true)}
+                  className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300"
+                >
+                  Configure MFA
+                </button>
+              )}
             </div>
           )}
 

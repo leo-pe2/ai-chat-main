@@ -159,13 +159,21 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, onMFAVerified }) => {
         setErrorMessage(verifyRes.error.message);
         return;
       }
-      const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+      // Force a session refresh so that the updated AAL is applied (should be aal2)
+      let { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
       if (refreshError) {
         setErrorMessage(refreshError.message);
         return;
       }
-      console.log('Refreshed session:', refreshed);
-      // Instead of closing the popup immediately, gate full access until MFA is verified.
+      // If the new session is still at aal1, refresh again
+      if (refreshed?.session?.user?.app_metadata?.aal !== 'aal2') {
+        const { data: finalRefreshed, error: finalErr } = await supabase.auth.refreshSession();
+        if (finalErr) {
+          setErrorMessage(finalErr.message);
+          return;
+        }
+      }
+      // Notify parent component once MFA is verified and session updated
       if (onMFAVerified) {
         onMFAVerified();
       } else {
