@@ -16,7 +16,7 @@ export async function searchTavily(query: string): Promise<string> {
         query,
         search_depth: "advanced",
         include_images: false,
-        max_results: 3,
+        max_results: 5,
       })
     });
     const data = await response.json();
