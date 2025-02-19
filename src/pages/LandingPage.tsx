@@ -191,7 +191,12 @@ const LandingPage: React.FC = () => {
       }
       
       console.log("Sending prompt to model:", selectedModel, modelInput);
-      const responseText = await getAIBackendResponse(modelInput, selectedModel);
+      // Map conversation history: convert 'bot' to 'assistant'
+      const historyForModel = updatedConversation.map(msg => ({
+        sender: msg.sender === 'bot' ? 'assistant' : 'user',
+        text: msg.text,
+      }));
+      const responseText = await getAIBackendResponse(modelInput, selectedModel, historyForModel);
       const formattedText = responseText.replace(/\[(.*?)\]/g, '$$$$1$$');
       const botMessage: Message = { sender: 'bot', text: formattedText };
       const newConversation = [...updatedConversation, botMessage];

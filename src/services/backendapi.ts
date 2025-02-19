@@ -44,20 +44,29 @@ function getClients() {
   return { openai, anthropic, googleModel, deepseek };
 }
 
-export async function getAIBackendResponse(prompt: string, model: string): Promise<string> {
+export async function getAIBackendResponse(
+  prompt: string, 
+  model: string, 
+  history: { sender: string; text: string }[] = []  // new multi-turn context parameter
+): Promise<string> {
   const { openai, anthropic, googleModel, deepseek } = getClients();
   if (model === '4o-mini') {
+    // Cast messages as any[] to bypass the missing "name" property error.
+    const messages = history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text })) as any[];
+    messages.push({ role: 'user', content: prompt });
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',  
-      messages: [{ role: 'user', content: prompt }],
+      model: 'gpt-4o-mini',
+      messages,
     });
     return completion.choices[0].message?.content || 'No response generated';
-  }  else if (model === 'o1-mini') {
-      const completion = await openai.chat.completions.create({
-        model: 'o1-mini',  
-        messages: [{ role: 'user', content: prompt }],
-      });
-      return completion.choices[0].message?.content || 'No response generated';
+  } else if (model === 'o1-mini') {
+    const messages = history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text })) as any[];
+    messages.push({ role: 'user', content: prompt });
+    const completion = await openai.chat.completions.create({
+      model: 'o1-mini',
+      messages,
+    });
+    return completion.choices[0].message?.content || 'No response generated';
   } else if (model === 'DeepSeek Reasoner') {  // Updated branch for DeepSeek
     const completion = await deepseek.chat.completions.create({
       model: "deepseek-reasoner",
