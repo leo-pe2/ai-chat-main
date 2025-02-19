@@ -17,6 +17,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { generateChatTitle } from '../services/chatTitleGenerator';
+import LoadingAnimation from '../components/LoadingAnimation';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -104,6 +105,7 @@ const LandingPage: React.FC = () => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null); // New state
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const [chatRefresh, setChatRefresh] = useState(0); // Re-add chatRefresh state
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -175,6 +177,7 @@ const LandingPage: React.FC = () => {
     }
 
     try {
+      setIsLoading(true);
       let modelInput = trimmedMessage;
       if (isSearchActive) {
         console.log("Waiting for Tavily response...");
@@ -206,6 +209,8 @@ const LandingPage: React.FC = () => {
         await updateChatContent(currentChatId, newConversation);
       }
       console.error('API error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -381,6 +386,7 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
             ))}
+            {isLoading && <LoadingAnimation isLoading={isLoading} />}
             <div ref={conversationEndRef} />
           </div>
         </div>

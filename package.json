@@ -10,6 +10,7 @@
     "@types/node": "^18.16.0",
     "@types/react-katex": "^3.0.4",
     "crypto-js": "^4.2.0",
+    "framer-motion": "^12.4.4",
     "katex": "^0.16.4",
     "openai": "^4.85.1",
     "react-copy-to-clipboard": "^5.1.0",
