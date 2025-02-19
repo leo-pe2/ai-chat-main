@@ -8,6 +8,9 @@ import { supabase } from './supabaseClient';
 // Validate environment variables before initializing clients
 validateConfig();
 
+// Add personality prompt constant
+const PERSONALITY_PROMPT = `You are a helpful assistant that answers programming questions in the style of a southern belle from the southeast United States.`;
+
 function getClients() {
   if (!config.OPENAI_API_KEY) {
     throw new Error('OpenAI API key is missing');
@@ -51,17 +54,60 @@ export async function getAIBackendResponse(
 ): Promise<string> {
   const { openai, anthropic, googleModel, deepseek } = getClients();
   if (model === '4o-mini') {
-    // Cast messages as any[] to bypass the missing "name" property error.
-    const messages = history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text })) as any[];
-    messages.push({ role: 'user', content: prompt });
+    let messages: any[] = [];
+    if (!history || history.length === 0) {
+      messages = [
+        {
+          role: 'developer',
+          content: PERSONALITY_PROMPT
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ];
+    } else {
+      messages = history.map(msg => ({ 
+        role: msg.sender as 'user'|'assistant'|'system', 
+        content: msg.text 
+      }));
+      if (messages.length === 1) {
+        messages.unshift({
+          role: 'developer',
+          content: PERSONALITY_PROMPT
+        });
+      }
+    }
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages,
     });
     return completion.choices[0].message?.content || 'No response generated';
   } else if (model === 'o1-mini') {
-    const messages = history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text })) as any[];
-    messages.push({ role: 'user', content: prompt });
+    let messages: any[] = [];
+    if (!history || history.length === 0) {
+      messages = [
+        {
+          role: 'developer',
+          content: PERSONALITY_PROMPT
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ];
+    } else {
+      messages = history.map(msg => ({ 
+        role: msg.sender as 'user'|'assistant'|'system', 
+        content: msg.text 
+      }));
+      if (messages.length === 1) {
+        messages.unshift({
+          role: 'developer',
+          content: PERSONALITY_PROMPT
+        });
+      }
+    }
     const completion = await openai.chat.completions.create({
       model: 'o1-mini',
       messages,
@@ -78,14 +124,13 @@ export async function getAIBackendResponse(
     const result = await googleModel.generateContent(prompt);
     const response = await result.response;
     return response.text() || 'No response generated';
-  } else if (model === 'Claude 3.5 Sonnet') {
-    const response = await anthropic.messages.create({
-      model: "claude-3-sonnet-20240229",
-      max_tokens: 150,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-    });
-    return (response as any).completion || 'No response generated';
+ // } else if (model === 'Claude 3.5 Sonnet') {
+ //   const response = await anthropic.messages.create({
+ //     model: "claude-3-sonnet-20240229",
+ //     messages: [{ role: "user", content: prompt }],
+ //     temperature: 0.7,
+ //   });
+ //   return (response as any).completion || 'No response generated';
   } else {
     throw new Error('Unknown model selected');
   }

@@ -187,7 +187,7 @@ const LandingPage: React.FC = () => {
           modelInput = `Here is some information:\n"${searchResult}"\n\nSummarize the topic in depth and respond in the same language as this query: "${trimmedMessage}".`;
         }
       } else {
-        modelInput = `${trimmedMessage}\n\nRespond in the same language as the query above. If you include mathematical formulas, wrap them in $$ symbols instead of [ ] symbols.`;
+        modelInput = trimmedMessage; // \n\nRespond in the same language as the query above. If you include mathematical formulas, wrap them in $$ symbols instead of [ ] symbols.`
       }
       
       console.log("Sending prompt to model:", selectedModel, modelInput);

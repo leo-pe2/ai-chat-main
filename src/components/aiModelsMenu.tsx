@@ -18,7 +18,7 @@ const AiModelsMenu: React.FC<AiModelsMenuProps> = ({ isOpen, selectedModel, onSe
     { name: 'o1-mini', description: 'Great for medium complex tasks' },
     { name: 'DeepSeek R1', description: 'Great for complex tasks' }, // Updated from 'DeepSeek R1'
     { name: 'Gemini 2.0 Flash', description: 'Great for understanding context' },
-    { name: 'Claude 3.5 Sonnet', description: 'Expensive and limited usage' },
+    
   ];
   return (
     <div 
