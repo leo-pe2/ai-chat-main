@@ -111,12 +111,12 @@ const LandingPage: React.FC = () => {
     setInputValue(e.target.value);
   };
 
-  const createNewChat = async (title: string): Promise<string | null> => {
+  const createNewChat = async (title: string, visible: boolean = false): Promise<string | null> => {
     if (!user) return null;
     try {
       const { data, error } = await supabase
         .from('chats')
-        .insert({ user_id: user.id, title, content: [], is_visible: true })
+        .insert({ user_id: user.id, title, content: [], is_visible: visible })
         .select();
       if (error) {
         console.error('Error creating chat:', error);
@@ -133,7 +133,7 @@ const LandingPage: React.FC = () => {
 
   // New function to handle new chat creation when button is clicked
   const handleNewChat = async () => {
-    const newChatId = await createNewChat('New Chat');
+    const newChatId = await createNewChat('New Chat', false);
     if (!newChatId) {
       console.error('Failed to create a new chat.');
     } else {
@@ -146,21 +146,19 @@ const LandingPage: React.FC = () => {
     const trimmedMessage = inputValue.trim();
     if (!trimmedMessage) return;
 
-    // If it's the first message, generate a chat title.
-    if (conversation.length === 0) {
+    // If it's the first message and a chat exists (created via button), update title and mark as visible.
+    if (conversation.length === 0 && currentChatId) {
       const generatedTitle = await generateChatTitle(trimmedMessage);
-      if (currentChatId) {
-        // Update existing chat title
-        try {
-          await updateChatTitle(currentChatId, generatedTitle);
-        } catch (err) {
-          console.error('Error updating chat title:', err);
-        }
-      } else {
-        // No chat exists, so create a new chat with the generated title
-        const newChatId = await createNewChat(generatedTitle);
-        if (!newChatId) return;
+      try {
+        await updateChatTitle(currentChatId, generatedTitle);
+      } catch (err) {
+        console.error('Error updating chat title:', err);
       }
+    } else if (conversation.length === 0 && !currentChatId) {
+      // Fallback: if no chat exists at all, create one (this path should rarely occur)
+      const generatedTitle = await generateChatTitle(trimmedMessage);
+      const newChatId = await createNewChat(generatedTitle, true);
+      if (!newChatId) return;
     }
 
     // Append user message and update chat content
@@ -281,6 +279,58 @@ const LandingPage: React.FC = () => {
       window.location.hash = '';
     }
   }, []);
+
+  // New effect to subscribe to chat table updates for this user using Supabase channels
+  useEffect(() => {
+    if (!user) return;
+    const updateChannel = supabase.channel(`chats_updates_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chats",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload: any) => {
+          console.log("Realtime UPDATE received:", payload);
+          setChatRefresh(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      updateChannel.unsubscribe();
+    };
+  }, [user]);
+
+  // Realtime subscription for INSERT events on chats
+  useEffect(() => {
+    if (!user) return;
+    const insertChannel = supabase.channel(`chats_inserts_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chats",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload: any) => {
+          console.log("Realtime INSERT received:", payload);
+          // If no chat is selected and the new chat is empty, set it as current
+          if (!currentChatId && Array.isArray(payload.new.content) && payload.new.content.length === 0) {
+            setCurrentChatId(payload.new.id);
+          }
+          setChatRefresh(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      insertChannel.unsubscribe();
+    };
+  }, [user, currentChatId]);
 
   return (
     <div className="min-h-screen bg-white text-black relative">

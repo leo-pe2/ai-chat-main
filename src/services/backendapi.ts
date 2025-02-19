@@ -106,9 +106,10 @@ export async function updateChatContent(chatId: string, conversation: any[]): Pr
 }
 
 export async function updateChatTitle(chatId: string, title: string): Promise<void> {
+  // Update title _and_ set the chat to visible.
   const { error } = await supabase
     .from('chats')
-    .update({ title })
+    .update({ title, is_visible: true })
     .eq('id', chatId);
   if (error) {
     throw error;
@@ -118,11 +119,10 @@ export async function updateChatTitle(chatId: string, title: string): Promise<vo
 export async function getChatById(chatId: string): Promise<any> {
   const { data, error } = await supabase
     .from('chats')
-    .select('*')  // Select all fields to ensure we get everything
+    .select('*')  // remove the is_visible filter here
     .eq('id', chatId)
-    .eq('is_visible', true)  // Only get visible chats
-    .single();
-  
+    .maybeSingle();  // use maybeSingle() to return null if no row found
+
   console.log('getChatById response:', { data, error }); // More detailed logging
   
   if (error) {
