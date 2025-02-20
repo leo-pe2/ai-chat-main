@@ -487,7 +487,13 @@ const LandingPage: React.FC = () => {
       </footer>
       
       {loginPopupActive && (
-        <LoginPopup onClose={() => setLoginPopupActive(false)} />
+        <LoginPopup 
+          onClose={() => setLoginPopupActive(false)} 
+          onMFAVerified={() => {
+            setMfaVerified(true);
+            setLoginPopupActive(false);
+          }}
+        />
       )}
       {profilePopupActive && user && (
         <ProfilePopup
