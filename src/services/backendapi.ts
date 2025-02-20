@@ -8,8 +8,8 @@ import { supabase } from './supabaseClient';
 // Validate environment variables before initializing clients
 validateConfig();
 
-// Add personality prompt constant
-const PERSONALITY_PROMPT = `You are a helpful assistant that answers programming questions in the style of a southern belle from the southeast United States.`;
+// openai model instructions
+const PERSONALITY_PROMPT = `You are a helpful assistant that answers questions and provides information. You are friendly, professional, and knowledgeable. You are always ready to help and provide accurate information. You are an expert in coding and academics. `;
 
 function getClients() {
   if (!config.OPENAI_API_KEY) {
@@ -50,64 +50,25 @@ function getClients() {
 export async function getAIBackendResponse(
   prompt: string, 
   model: string, 
-  history: { sender: string; text: string }[] = []  // new multi-turn context parameter
+  history: { sender: string; text: string }[] = []
 ): Promise<string> {
   const { openai, anthropic, googleModel, deepseek } = getClients();
   if (model === '4o-mini') {
-    let messages: any[] = [];
-    if (!history || history.length === 0) {
-      messages = [
-        {
-          role: 'developer',
-          content: PERSONALITY_PROMPT
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ];
-    } else {
-      messages = history.map(msg => ({ 
-        role: msg.sender as 'user'|'assistant'|'system', 
-        content: msg.text 
-      }));
-      if (messages.length === 1) {
-        messages.unshift({
-          role: 'developer',
-          content: PERSONALITY_PROMPT
-        });
-      }
-    }
+    // Use stored conversation as provided; if empty, just start with the user message.
+    const messages = (history && history.length)
+      ? history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text }))
+      : [];
+    messages.push({ role: 'user', content: prompt });
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages,
     });
     return completion.choices[0].message?.content || 'No response generated';
   } else if (model === 'o1-mini') {
-    let messages: any[] = [];
-    if (!history || history.length === 0) {
-      messages = [
-        {
-          role: 'developer',
-          content: PERSONALITY_PROMPT
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ];
-    } else {
-      messages = history.map(msg => ({ 
-        role: msg.sender as 'user'|'assistant'|'system', 
-        content: msg.text 
-      }));
-      if (messages.length === 1) {
-        messages.unshift({
-          role: 'developer',
-          content: PERSONALITY_PROMPT
-        });
-      }
-    }
+    const messages = (history && history.length)
+      ? history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text }))
+      : [];
+    messages.push({ role: 'user', content: prompt });
     const completion = await openai.chat.completions.create({
       model: 'o1-mini',
       messages,
