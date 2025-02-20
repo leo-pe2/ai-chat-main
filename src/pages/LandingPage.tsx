@@ -112,6 +112,7 @@ const LandingPage: React.FC = () => {
   const [loadingMFA, setLoadingMFA] = useState(true);
   const [mfaVerified, setMfaVerified] = useState(false);
   const [mfaCode, setMfaCode] = useState(''); // new state for MFA input
+  const [mfaError, setMfaError] = useState(''); // new state for MFA error message
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -358,6 +359,10 @@ const LandingPage: React.FC = () => {
   }, [user, currentChatId]);
 
   const checkMfa = async () => {
+    if (!user) {
+      setLoadingMFA(false);
+      return;
+    }
     setLoadingMFA(true);
     try {
       const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -376,10 +381,34 @@ const LandingPage: React.FC = () => {
   };
 
   // New handler for MFA submit
-  const handleMfaSubmit = (e: React.FormEvent) => {
+  const handleMfaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // call checkMfa or add extra logic here using mfaCode
-    checkMfa();
+    // List current MFA factors; expect at least one TOTP factor
+    const factors = await supabase.auth.mfa.listFactors();
+    if (factors.error || !factors.data.totp.length) {
+      setMfaError("No MFA factors found.");
+      return;
+    }
+    const totpFactor = factors.data.totp[0];
+    // Create a challenge for the chosen factor
+    const challengeResult = await supabase.auth.mfa.challenge({ factorId: totpFactor.id });
+    if (challengeResult.error || !challengeResult.data) {
+      setMfaError(challengeResult.error?.message || "Failed to create challenge.");
+      return;
+    }
+    const challengeId = challengeResult.data.id;
+    // Verify the provided code using the real factorId and challengeId
+    const { data, error } = await supabase.auth.mfa.verify({
+      factorId: totpFactor.id,
+      challengeId,
+      code: mfaCode,
+    });
+    if (error || !data) {
+      setMfaError("Invalid MFA code. Please try again.");
+      return;
+    }
+    setMfaVerified(true);
+    setMfaError("");
   };
 
   useEffect(() => {
@@ -469,7 +498,7 @@ const LandingPage: React.FC = () => {
       {resetPasswordPopupActive && (
         <ResetPasswordPopup onClose={() => setResetPasswordPopupActive(false)} />
       )}
-      {!mfaVerified && (
+      {user && !mfaVerified && !loginPopupActive && (
         <div className="fixed inset-0 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 z-50">
           <div className="w-full max-w-sm bg-white rounded-lg shadow-lg p-6">
             <form onSubmit={handleMfaSubmit} className="flex flex-col items-center">

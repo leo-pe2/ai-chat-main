@@ -83,5 +83,20 @@ export async function logoutAndResetMFA(): Promise<void> {
 }
 
 // =====================================================================
+// Verify MFA code and upgrade assurance level (aal2)
+// =====================================================================
+export async function verifyMfa({
+  code,
+  factorId,
+  challengeId,
+}: { code: string; factorId: string; challengeId: string; }) {
+  const { data, error } = await supabase.auth.mfa.verify({ code, factorId, challengeId });
+  if (error) {
+    throw error;
+  }
+  return data;
+}
+
+// =====================================================================
 // You can add more authentication-related functions below...
 // =====================================================================

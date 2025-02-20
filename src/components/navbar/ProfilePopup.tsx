@@ -40,6 +40,13 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
 
   useEffect(() => {
     const checkMFAStatus = async () => {
+      // First, get the current session.
+      const sessionResp = await supabase.auth.getSession();
+      if (!sessionResp.data.session) {
+        console.warn("No auth session available; skipping MFA check.");
+        setHasMFA(false);
+        return;
+      }
       const { data: factors, error } = await supabase.auth.mfa.listFactors();
       if (error) {
         console.error('Error checking MFA status:', error);
@@ -50,7 +57,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
 
     checkMFAStatus();
     
-    // Subscribe to auth changes
+    // Subscribe to auth changes.
     const { data: authListener } = supabase.auth.onAuthStateChange(() => {
       checkMFAStatus();
     });
