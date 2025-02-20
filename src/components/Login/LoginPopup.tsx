@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { signInWithEmail, signUpWithEmail } from '../services/auth';
+import { signInWithEmail, signUpWithEmail } from '../../services/auth';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
-import { supabase } from '../services/auth';
+import { supabase } from '../../services/auth';
 
 interface LoginPopupProps {
   onClose: () => void;

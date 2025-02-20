@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import AiModelsMenu from './aiModelsMenu';
-import LoginPopup from './LoginPopup';  // Existing
+import LoginPopup from '../Login/LoginPopup';  // Existing
 
 interface NavbarProps {
   onToggle: () => void;

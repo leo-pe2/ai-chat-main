@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Navbar from '../components/navbar';
-import Sidebar from '../components/sidebar';
-import ChatBubble from '../components/ChatBubble';
+import Navbar from '../components/navbar/navbar';
+import Sidebar from '../components/navbar/sidebar/sidebar';
+import ChatBubble from '../components/chat/ChatBubble';
 import { getAIBackendResponse, getUserChats, updateChatContent, getChatById, updateChatTitle } from '../services/backendapi';
 import { sendDiscordError } from '../services/discordWebhook';
 import { searchTavily } from '../services/tavilySearch';
-import LoginPopup from '../components/LoginPopup';
-import ProfilePopup from '../components/profile/ProfilePopup';
+import LoginPopup from '../components/Login/LoginPopup';
+import ProfilePopup from '../components/navbar/ProfilePopup';
 import { supabase } from '../services/auth';
-import ResetPasswordPopup from '../components/ResetPasswordPopup';
+import ResetPasswordPopup from '../components/other/ResetPasswordPopup';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -17,7 +17,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { generateChatTitle } from '../services/chatTitleGenerator';
-import LoadingAnimation from '../components/LoadingAnimation';
+import LoadingAnimation from '../components/chat/LoadingAnimation';
 
 interface Message {
   sender: 'user' | 'bot' | 'developer';

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { getUserChats } from '../services/backendapi';
-import { supabase } from '../services/auth'; // New import for database update
+import { getUserChats } from '../../../services/backendapi';
+import { supabase } from '../../../services/auth'; // New import for database update
 import ConfirmDeletePopup from './ConfirmDeletePopup'; // New import
 
 interface SidebarProps {

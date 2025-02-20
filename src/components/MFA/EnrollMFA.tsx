@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/auth';
+import { supabase } from '../../services/auth';
 
 interface EnrollMFAProps {
   onEnrolled: () => void;

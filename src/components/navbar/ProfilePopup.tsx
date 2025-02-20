@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/auth';
-import { EnrollMFA } from '../EnrollMFA';
+import { EnrollMFA } from '../MFA/EnrollMFA';
 
 interface ProfilePopupProps {
   user: any; // Adjust type as needed

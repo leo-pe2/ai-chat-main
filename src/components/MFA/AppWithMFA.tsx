@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/auth';
-import AuthMFA from './AuthMFA';
-import App from '../App';
+import { supabase } from '../../services/auth';
+import AuthMFA from '../Login/AuthMFA';
+import App from '../../App';
 
 function AppWithMFA() {
   const [readyToShow, setReadyToShow] = useState(false);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../services/auth';
+import { supabase } from '../../services/auth';
 
 interface AuthMFAProps {
   onVerified: () => void;
