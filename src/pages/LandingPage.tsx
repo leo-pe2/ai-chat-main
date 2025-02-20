@@ -20,7 +20,7 @@ import { generateChatTitle } from '../services/chatTitleGenerator';
 import LoadingAnimation from '../components/LoadingAnimation';
 
 interface Message {
-  sender: 'user' | 'bot';
+  sender: 'user' | 'bot' | 'developer';
   text: string;
 }
 
@@ -92,6 +92,8 @@ const CodeBlock = ({ inline, className, children, ...props }: { inline?: boolean
   );
 };
 
+const DEV_PROMPT = "You are a helpful assistant that answers questions and provides information. You are friendly, professional, and knowledgeable. You are always ready to help, provide accurate information, and are an expert in coding and academics.";
+
 const LandingPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [conversation, setConversation] = useState<Message[]>([]);
@@ -118,7 +120,12 @@ const LandingPage: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('chats')
-        .insert({ user_id: user.id, title, content: [], is_visible: visible })
+        .insert({ 
+          user_id: user.id, 
+          title, 
+          content: [{ sender: 'developer', text: DEV_PROMPT }], // store developer message
+          is_visible: visible 
+        })
         .select();
       if (error) {
         console.error('Error creating chat:', error);
@@ -135,7 +142,7 @@ const LandingPage: React.FC = () => {
 
   // New function to handle new chat creation when button is clicked
   const handleNewChat = async () => {
-    const newChatId = await createNewChat('New Chat', false);
+    const newChatId = await createNewChat('New Chat', false); // changed from true to false
     if (!newChatId) {
       console.error('Failed to create a new chat.');
     } else {
@@ -148,19 +155,23 @@ const LandingPage: React.FC = () => {
     const trimmedMessage = inputValue.trim();
     if (!trimmedMessage) return;
 
-    // If it's the first message and a chat exists (created via button), update title and mark as visible.
-    if (conversation.length === 0 && currentChatId) {
+    // Determine the count of user messages (excluding developer messages)
+    const userMessagesCount = conversation.filter(msg => msg.sender === 'user').length;
+
+    // Ensure a chat is visible when the user sends a message.
+    if (!currentChatId) {
+      // Create a new chat with visible set to true.
+      const generatedTitle = await generateChatTitle(trimmedMessage);
+      const newChatId = await createNewChat(generatedTitle, true);
+      if (!newChatId) return;
+    } else if (userMessagesCount === 0 && currentChatId) {
+      // Update the existing chat (title) to be visible if no user messages yet.
       const generatedTitle = await generateChatTitle(trimmedMessage);
       try {
         await updateChatTitle(currentChatId, generatedTitle);
       } catch (err) {
         console.error('Error updating chat title:', err);
       }
-    } else if (conversation.length === 0 && !currentChatId) {
-      // Fallback: if no chat exists at all, create one (this path should rarely occur)
-      const generatedTitle = await generateChatTitle(trimmedMessage);
-      const newChatId = await createNewChat(generatedTitle, true);
-      if (!newChatId) return;
     }
 
     // Append user message and update chat content
@@ -187,7 +198,7 @@ const LandingPage: React.FC = () => {
           modelInput = `Here is some information:\n"${searchResult}"\n\nSummarize the topic in depth and respond in the same language as this query: "${trimmedMessage}".`;
         }
       } else {
-        modelInput = trimmedMessage; // \n\nRespond in the same language as the query above. If you include mathematical formulas, wrap them in $$ symbols instead of [ ] symbols.`
+        modelInput = trimmedMessage;
       }
       
       console.log("Sending prompt to model:", selectedModel, modelInput);
@@ -369,7 +380,9 @@ const LandingPage: React.FC = () => {
       <main className={`absolute top-[60px] bottom-[150px] transition-all duration-300 ${sidebarOpen ? 'left-64' : 'left-0'} right-0 overflow-y-auto`}>
         <div className="flex justify-center">
           <div className="w-[45rem] px-4 py-12 space-y-4">
-            {conversation.map((msg, index) => (
+            {conversation
+              .filter(msg => msg.sender !== 'developer') // hide developer messages
+              .map((msg, index) => (
               <div
                 key={index}
                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
