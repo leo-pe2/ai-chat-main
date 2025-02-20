@@ -10,6 +10,7 @@ interface SidebarProps {
   onSelectChat: (chatId: string) => Promise<void>;
   onNewChat: () => Promise<void>;
   chatRefresh: number;
+  mfaVerified?: boolean; // <-- new prop
 }
 
 interface ChatGroup {
@@ -26,18 +27,18 @@ interface ChatType {
   // ...any other fields...
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, onNewChat, chatRefresh }) => {
+const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, onNewChat, chatRefresh, mfaVerified }) => {
   const [chats, setChats] = useState<ChatType[]>([]);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [chatToDelete, setChatToDelete] = useState<ChatType | null>(null); // New state
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !mfaVerified) { // only fetch chats when MFA is verified
       setChats([]);
       return;
     }
     getUserChats(user.id).then((data) => setChats(data)).catch(console.error);
-  }, [user, chatRefresh]);
+  }, [user, chatRefresh, mfaVerified]);
 
   useEffect(() => {
     const interval = setInterval(() => {

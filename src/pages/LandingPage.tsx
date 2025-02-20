@@ -437,6 +437,7 @@ const LandingPage: React.FC = () => {
           onSelectChat={onSelectChat}
           onNewChat={handleNewChat}
           chatRefresh={chatRefresh}
+          mfaVerified={mfaVerified} // <-- new prop passed
         />
       </header>
       
