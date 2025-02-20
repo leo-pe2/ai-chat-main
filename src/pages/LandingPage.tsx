@@ -359,10 +359,6 @@ const LandingPage: React.FC = () => {
   }, [user, currentChatId]);
 
   const checkMfa = async () => {
-    if (!user) {
-      setLoadingMFA(false);
-      return;
-    }
     setLoadingMFA(true);
     try {
       // First, check if user has MFA enabled
@@ -380,7 +376,11 @@ const LandingPage: React.FC = () => {
           console.error('Error or no MFA data:', error);
           setMfaVerified(false);
         } else {
-          setMfaVerified(data.currentLevel === 'aal2');
+          if (data.currentLevel === 'aal2') {
+            setMfaVerified(true);
+          } else {
+            setMfaVerified(false);
+          }
         }
       }
     } catch (err) {
@@ -426,6 +426,9 @@ const LandingPage: React.FC = () => {
     checkMfa();
     // ...existing useEffect code...
   }, []);
+
+  // Add a loading guard to avoid showing MFA during check
+  if (loadingMFA) return null;
 
   return (
     <div className="min-h-screen bg-white text-black relative">

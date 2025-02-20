@@ -7,7 +7,6 @@ function AppWithMFA() {
   const [loading, setLoading] = useState(true);
   const [mfaVerified, setMfaVerified] = useState(false);
 
-  // Only mark MFA as verified if the current level is exactly 'aal2'
   const checkMfa = async () => {
     setLoading(true);
     try {
@@ -18,8 +17,11 @@ function AppWithMFA() {
         setMfaVerified(false);
       } else {
         console.log('MFA Levels:', data.currentLevel, data.nextLevel);
-        // Only mark as verified if the currentLevel is exactly 'aal2'
-        setMfaVerified(data.currentLevel === 'aal2');
+        if (data.currentLevel === 'aal2') {
+          setMfaVerified(true);
+        } else {
+          setMfaVerified(false);
+        }
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -35,13 +37,15 @@ function AppWithMFA() {
       checkMfa();
     });
     return () => {
-      // Correctly unsubscribe using the subscription property.
       authListener?.subscription.unsubscribe();
     };
   }, []);
 
   if (loading) return null;
-  return mfaVerified ? <App /> : <AuthMFA onVerified={checkMfa} />;
+  return mfaVerified ? <App /> : <AuthMFA onVerified={() => { 
+    setMfaVerified(true);
+    checkMfa();
+  }} />;
 }
 
 export default AppWithMFA;
