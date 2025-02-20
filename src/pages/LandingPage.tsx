@@ -365,12 +365,23 @@ const LandingPage: React.FC = () => {
     }
     setLoadingMFA(true);
     try {
-      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (error || !data) {
-        console.error('Error or no MFA data:', error);
+      // First, check if user has MFA enabled
+      const factorsResponse = await supabase.auth.mfa.listFactors();
+      if (factorsResponse.error) {
+        console.error("Error listing MFA factors:", factorsResponse.error.message);
         setMfaVerified(false);
+      } else if (!factorsResponse.data.totp || factorsResponse.data.totp.length === 0) {
+        // User does not have MFA enabled, so mark as verified
+        setMfaVerified(true);
       } else {
-        setMfaVerified(data.currentLevel === 'aal2');
+        // User has MFA enabled, check the assurance level
+        const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (error || !data) {
+          console.error('Error or no MFA data:', error);
+          setMfaVerified(false);
+        } else {
+          setMfaVerified(data.currentLevel === 'aal2');
+        }
       }
     } catch (err) {
       console.error('Unexpected error:', err);
