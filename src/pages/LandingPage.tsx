@@ -18,6 +18,7 @@ import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { generateChatTitle } from '../services/chatTitleGenerator';
 import LoadingAnimation from '../components/chat/LoadingAnimation';
+import AuthMFA from '../components/Login/AuthMFA';
 
 interface Message {
   sender: 'user' | 'bot' | 'developer';
@@ -108,6 +109,9 @@ const LandingPage: React.FC = () => {
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const [chatRefresh, setChatRefresh] = useState(0); // Re-add chatRefresh state
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadingMFA, setLoadingMFA] = useState(true);
+  const [mfaVerified, setMfaVerified] = useState(false);
+  const [mfaCode, setMfaCode] = useState(''); // new state for MFA input
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -353,6 +357,36 @@ const LandingPage: React.FC = () => {
     };
   }, [user, currentChatId]);
 
+  const checkMfa = async () => {
+    setLoadingMFA(true);
+    try {
+      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (error || !data) {
+        console.error('Error or no MFA data:', error);
+        setMfaVerified(false);
+      } else {
+        setMfaVerified(data.currentLevel === 'aal2');
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setMfaVerified(false);
+    } finally {
+      setLoadingMFA(false);
+    }
+  };
+
+  // New handler for MFA submit
+  const handleMfaSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // call checkMfa or add extra logic here using mfaCode
+    checkMfa();
+  };
+
+  useEffect(() => {
+    checkMfa();
+    // ...existing useEffect code...
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-black relative">
       <header className="fixed top-0 left-0 right-0 z-20">
@@ -434,6 +468,27 @@ const LandingPage: React.FC = () => {
       )}
       {resetPasswordPopupActive && (
         <ResetPasswordPopup onClose={() => setResetPasswordPopupActive(false)} />
+      )}
+      {!mfaVerified && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 z-50">
+          <div className="w-full max-w-sm bg-white rounded-lg shadow-lg p-6">
+            <form onSubmit={handleMfaSubmit} className="flex flex-col items-center">
+              <input
+                type="text"
+                placeholder="Enter MFA code"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md outline-none focus:border-blue-500 mb-4"
+              />
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-black text-white rounded-md hover:opacity-80"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
