@@ -74,7 +74,7 @@ export async function getAIBackendResponse(
       messages,
     });
     return completion.choices[0].message?.content || 'No response generated';
-  } else if (model === 'DeepSeek Reasoner') {  // Updated branch for DeepSeek
+  } else if (model === 'DeepSeek R1') {  // Updated branch for DeepSeek
     const completion = await deepseek.chat.completions.create({
       model: "deepseek-reasoner",
       messages: [{ role: 'user', content: prompt }]
