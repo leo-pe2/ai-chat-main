@@ -1,11 +1,15 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Use environment variables for the Supabase URL and Key
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseKey = process.env.REACT_APP_SUPABASE_KEY;
+// Use import.meta.env to access environment variables in a Vite project
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Supabase credentials are missing in environment variables.');
+}
 
 // Initialize your Supabase client
-export const supabase: SupabaseClient = createClient(supabaseUrl!, supabaseKey!);
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
 // =====================================================================
 // Sign up a new user with first name, last name, email and password
