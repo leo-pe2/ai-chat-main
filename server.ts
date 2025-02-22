@@ -52,19 +52,7 @@ app.post('/api/chat', async (req, res) => {
       });
       response = completion.choices[0].message?.content;
       
-    } else if (model === 'o1-mini') {
-      const messages = history.map((msg: any) => ({ 
-        role: msg.sender === 'user' ? 'user' : 'assistant', 
-        content: msg.text 
-      }));
-      messages.push({ role: 'user', content: prompt });
-
-      const completion = await openai.chat.completions.create({
-        model: 'o1-mini',
-        messages,
-      });
-      response = completion.choices[0].message?.content;
-
+    
     } else if (model === 'DeepSeek Reasoner') {
       const completion = await deepseek.chat.completions.create({
         model: "deepseek-reasoner",
@@ -75,6 +63,32 @@ app.post('/api/chat', async (req, res) => {
     } else if (model === 'Gemini 2.0 Flash') {
       const result = await googleModel.generateContent(prompt);
       response = (await result.response).text();
+      
+    } else if (model === 'o3-mini-high') {
+      // New branch using openrouter with full conversation history + extra headers & logging
+      const messages = history.map((msg: any) => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text,
+      }));
+      messages.push({ role: 'user', content: prompt });
+      
+      const openrouterRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.VITE_OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "openai/o3-mini-high",
+          messages
+        })
+      });
+      
+      const data = await openrouterRes.json();
+      console.log('openrouter response:', data); // Log full data to debug
+      response = data.message?.content || data.choices?.[0]?.message?.content || "No response generated";
+    } else {
+      throw new Error('Unknown model selected');
     }
 
     // Log the successful endpoint hit
