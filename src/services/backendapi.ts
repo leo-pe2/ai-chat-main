@@ -11,90 +11,19 @@ validateConfig();
 // openai model instructions
 const PERSONALITY_PROMPT = `You are a helpful assistant that answers questions and provides information. You are friendly, professional, and knowledgeable. You are always ready to help and provide accurate information. You are an expert in coding and academics. `;
 
-function getClients() {
-  if (!config.OPENAI_API_KEY) {
-    throw new Error('OpenAI API key is missing');
-  }
-  if (!config.DEEPSEEK_API_KEY) {
-    throw new Error('DeepSeek API key is missing');
-  }
-  if (!config.ANTHROPIC_API_KEY) {
-    throw new Error('Anthropic API key is missing');
-  }
-  if (!config.GOOGLE_API_KEY) {
-    throw new Error('Google API key is missing');
-  }
-
-  const openai = new OpenAI({ 
-    apiKey: config.OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true 
-  });
-
-  const deepseek = new OpenAI({
-    apiKey: config.DEEPSEEK_API_KEY,
-    baseURL: "https://api.deepseek.com/v1",
-    dangerouslyAllowBrowser: true
-  });
-
-  const anthropic = new Anthropic({ 
-    apiKey: config.ANTHROPIC_API_KEY,
-    dangerouslyAllowBrowser: true 
-  });
-
-  const googleGenAI = new GoogleGenerativeAI(config.GOOGLE_API_KEY);
-  const googleModel = googleGenAI.getGenerativeModel({ model: "gemini-pro" });
-
-  return { openai, anthropic, googleModel, deepseek };
-}
-
 export async function getAIBackendResponse(
   prompt: string, 
   model: string, 
   history: { sender: string; text: string }[] = []
 ): Promise<string> {
-  const { openai, anthropic, googleModel, deepseek } = getClients();
-  if (model === '4o-mini') {
-    // Use stored conversation as provided; if empty, just start with the user message.
-    const messages = (history && history.length)
-      ? history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text }))
-      : [];
-    messages.push({ role: 'user', content: prompt });
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages,
-    });
-    return completion.choices[0].message?.content || 'No response generated';
-  } else if (model === 'o1-mini') {
-    const messages = (history && history.length)
-      ? history.map(msg => ({ role: msg.sender as 'user'|'assistant'|'system', content: msg.text }))
-      : [];
-    messages.push({ role: 'user', content: prompt });
-    const completion = await openai.chat.completions.create({
-      model: 'o1-mini',
-      messages,
-    });
-    return completion.choices[0].message?.content || 'No response generated';
-  } else if (model === 'DeepSeek R1') {  // Updated branch for DeepSeek
-    const completion = await deepseek.chat.completions.create({
-      model: "deepseek-reasoner",
-      messages: [{ role: 'user', content: prompt }]
-    });
-    const answer = completion.choices[0].message?.content || '';
-    return answer;
-  } else if (model === 'Gemini 2.0 Flash') {
-    const result = await googleModel.generateContent(prompt);
-    const response = await result.response;
-    return response.text() || 'No response generated';
- // } else if (model === 'Claude 3.5 Sonnet') {
- //   const response = await anthropic.messages.create({
- //     model: "claude-3-sonnet-20240229",
- //     messages: [{ role: "user", content: prompt }],
- //     temperature: 0.7,
- //   });
- //   return (response as any).completion || 'No response generated';
-  } else {
-    throw new Error('Unknown model selected');
-  }
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, model, history })
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return json.response || 'No response generated';
 }
 
 export async function getUserChats(userId: string): Promise<any[]> {
