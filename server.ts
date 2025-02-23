@@ -51,37 +51,25 @@ app.post('/api/chat', async (req, res) => {
         messages,
       });
       response = completion.choices[0].message?.content;
-      
     
-    } else if (model === 'DeepSeek Reasoner') {
-      const completion = await deepseek.chat.completions.create({
-        model: "deepseek-reasoner",
-        messages: [{ role: 'user', content: prompt }]
-      });
-      response = completion.choices[0].message?.content;
-
-    } else if (model === 'Gemini 2.0 Flash') {
-      const result = await googleModel.generateContent(prompt);
-      response = (await result.response).text();
-      
-    } else if (model === 'o3-mini-high') {
+    }  else if (model === 'o3-mini' || model === 'o3-mini-high' || model === 'DeepSeek R1') {
       // New branch using openrouter with full conversation history + extra headers & logging
       const messages = history.map((msg: any) => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.text,
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.text,
       }));
       messages.push({ role: 'user', content: prompt });
       
       const openrouterRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.VITE_OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "openai/o3-mini-high",
-          messages
-        })
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.VITE_OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: `openai/${model}`,
+        messages
+      })
       });
       
       const data = await openrouterRes.json();

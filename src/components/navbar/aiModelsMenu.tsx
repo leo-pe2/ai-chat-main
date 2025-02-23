@@ -14,10 +14,11 @@ interface AiModelsMenuProps {
 const AiModelsMenu: React.FC<AiModelsMenuProps> = ({ isOpen, selectedModel, onSelect }) => {
   if (!isOpen) return null;
   const models: Model[] = [
-    { name: 'o3-mini-high', description: 'Great for high complex tasks' },
     { name: '4o-mini', description: 'Great for normal chatting' },
-    { name: 'DeepSeek R1', description: 'Great for complex tasks' }, // Updated from 'DeepSeek R1'
-    { name: 'Gemini 2.0 Flash', description: 'Great for understanding context' }
+    { name: 'o3-mini', description: 'Great for complex tasks' },
+    { name: 'o3-mini-high', description: 'Great for high complex tasks' },
+   
+
      
     
   ];
