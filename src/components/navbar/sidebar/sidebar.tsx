@@ -103,32 +103,37 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
 
   return (
     <>
-      <div className={`fixed inset-y-0 left-0 w-64 bg-gray-100 text-black p-4 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex justify-between items-center">
-          <button 
-            onClick={onClose} 
-            className="px-3 py-2 rounded-lg transition-all duration-300 ease-in-out hover:bg-gray-300/50"
-          >
-            <img
-              width="24"
-              height="24"
-              src="https://cdn-icons-png.flaticon.com/128/12144/12144316.png"
-              alt="close sidebar"
-            />
-          </button>
-          <button
-            onClick={onNewChat}
-            className="px-3 py-2 rounded-lg transition-all duration-300 ease-in-out hover:bg-gray-300/50"
-          >
-            <img
-              width="24"
-              height="24"
-              src="https://cdn-icons-png.flaticon.com/128/11127/11127933.png"
-              alt="new chat"
-            />
-          </button>
+      <div className={`fixed inset-y-0 left-0 w-64 bg-gray-100 text-black flex flex-col transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Fixed header */}
+        <div className="p-4 border-b border-gray-100">
+          <div className="flex justify-between items-center">
+            <button 
+              onClick={onClose} 
+              className="px-3 py-2 rounded-lg transition-all duration-300 ease-in-out hover:bg-gray-300/50"
+            >
+              <img
+                width="24"
+                height="24"
+                src="https://cdn-icons-png.flaticon.com/128/12144/12144316.png"
+                alt="close sidebar"
+              />
+            </button>
+            <button
+              onClick={onNewChat}
+              className="px-3 py-2 rounded-lg transition-all duration-300 ease-in-out hover:bg-gray-300/50"
+            >
+              <img
+                width="24"
+                height="24"
+                src="https://cdn-icons-png.flaticon.com/128/11127/11127933.png"
+                alt="new chat"
+              />
+            </button>
+          </div>
         </div>
-        <div className="mt-4 space-y-4">
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {Object.entries(groupedChats).map(([groupName, groupChats]) => 
             groupChats.length > 0 && (
               <div key={groupName} className="space-y-2">
