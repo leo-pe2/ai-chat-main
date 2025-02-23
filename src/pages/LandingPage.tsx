@@ -19,6 +19,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { generateChatTitle } from '../services/chatTitleGenerator';
 import LoadingAnimation from '../components/chat/LoadingAnimation';
 import AuthMFA from '../components/Login/AuthMFA';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface Message {
   sender: 'user' | 'bot' | 'developer';
@@ -113,6 +114,8 @@ const LandingPage: React.FC = () => {
   const [mfaVerified, setMfaVerified] = useState(false);
   const [mfaCode, setMfaCode] = useState(''); // new state for MFA input
   const [mfaError, setMfaError] = useState(''); // new state for MFA error message
+  const navigate = useNavigate();
+  const { chatId: routeChatId } = useParams<{ chatId: string }>();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -235,34 +238,28 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  // New handler to load a chat conversation when selected from sidebar
+  // Updated handler: fetch chat and update URL
   const onSelectChat = async (chatId: string) => {
-    console.log('onSelectChat called with chatId:', chatId); // Debug log
+    console.log('onSelectChat called with chatId:', chatId);
     if (!chatId) {
       console.error('No chat ID provided');
       return;
     }
-  
     try {
-      console.log('Fetching chat data...'); // Debug log
+      console.log('Fetching chat data...');
       const chat = await getChatById(chatId);
-      console.log('Full chat data:', chat);  // Debug log
+      console.log('Full chat data:', chat);
       
       if (!chat) {
         console.error('Chat not found or not visible');
         return;
       }
   
-      // Set currentChatId first
       setCurrentChatId(chat.id);
-      
-      // Handle content
-      console.log('Raw chat content:', chat.content); // Debug log
       let content = Array.isArray(chat.content) ? chat.content : [];
-      console.log('Processed content:', content); // Debug log
-      
-      // Update conversation
       setConversation(content);
+      // Update URL with chatId
+      navigate(`/chat/${chat.id}`);
       
     } catch (error) {
       console.error('Error in onSelectChat:', error);
@@ -427,10 +424,20 @@ const LandingPage: React.FC = () => {
     // ...existing useEffect code...
   }, []);
 
-  // Add a loading guard to avoid showing MFA during check
-  if (loadingMFA) return null;
+  // Load chat from URL if exists on mount
+  useEffect(() => {
+    if (routeChatId) {
+      onSelectChat(routeChatId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeChatId]);
 
-  return (
+  // Add a loading guard to avoid showing MFA during check
+  return loadingMFA ? (
+    <div className="min-h-screen flex items-center justify-center">
+      Loading...
+    </div>
+  ) : (
     <div className="min-h-screen bg-white text-black relative">
       <header className="fixed top-0 left-0 right-0 z-20">
         <Navbar

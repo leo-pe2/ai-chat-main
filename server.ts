@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
+import path from 'path'; // <-- new import
 
 // Explicitly load .env.development so that all VITE_ variables are available.
 dotenv.config({ path: './.env.development' });
@@ -23,6 +24,9 @@ app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.url}`);
   next();
 });
+
+// Serve static assets from the root (or adjust the folder as needed)
+app.use(express.static(path.join(__dirname)));
 
 // Initialize API clients
 const openai = new OpenAI({ apiKey: process.env.VITE_OPENAI_API_KEY });
@@ -87,6 +91,11 @@ app.post('/api/chat', async (req, res) => {
     // Log a full error object for debugging (remove stack trace in production)
     res.status(500).json({ error: error.message || 'Internal server error', details: error.stack });
   }
+});
+
+// Add catch-all route to serve index.html for client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
