@@ -146,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
                     className="flex justify-between items-center bg-white px-3 py-2 rounded-lg shadow hover:bg-gray-200 cursor-pointer"
                   >
                     <span>
-                      {chat.title || new Date(chat.created_at).toLocaleTimeString()}
+                      {chat.title?.replace(/"/g, '') || new Date(chat.created_at).toLocaleTimeString()}
                     </span>
                     <button
                       onClick={(e) => {

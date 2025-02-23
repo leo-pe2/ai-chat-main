@@ -148,14 +148,24 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  // New function to handle new chat creation when button is clicked
+  // Updated new chat creation handler to prevent creating multiple invisible "New Chat" chats
   const handleNewChat = async () => {
+    // if a chat already exists with only the initial developer message, don't create a new one
+    if (
+      currentChatId &&
+      conversation.length === 1 &&
+      conversation[0].sender === 'developer' &&
+      conversation[0].text === DEV_PROMPT
+    ) {
+      console.warn("A new chat is already in progress.");
+      return;
+    }
     const newChatId = await createNewChat('New Chat', false); // changed from true to false
     if (!newChatId) {
       console.error('Failed to create a new chat.');
     } else {
       await onSelectChat(newChatId);
-      setChatRefresh(prev => prev + 1); // re-add refresh update
+      setChatRefresh(prev => prev + 1);
     }
   };
 
