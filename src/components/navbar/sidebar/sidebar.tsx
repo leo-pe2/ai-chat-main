@@ -41,12 +41,20 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
     getUserChats(user.id).then((data) => setChats(data)).catch(console.error);
   }, [user, chatRefresh, mfaVerified]);
 
+  // Remove the previous interval effect and replace with a timeout that updates at midnight
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60000); // update every minute
-    return () => clearInterval(interval);
-  }, []);
+    const scheduleMidnightUpdate = () => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const msUntilMidnight = tomorrow.getTime() - now.getTime();
+      return setTimeout(() => {
+        // Update currentTime once at midnight to trigger re-grouping
+        setCurrentTime(Date.now());
+      }, msUntilMidnight);
+    };
+    const timer = scheduleMidnightUpdate();
+    return () => clearTimeout(timer);
+  }, [currentTime]);
 
   const groupedChats = useMemo(() => {
     const groups: ChatGroup = {
@@ -57,22 +65,27 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
     };
 
     const now = new Date();
+    // Zero out hours for today's date
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
     chats.forEach((chat) => {
       const chatDate = new Date(chat.created_at);
-      const diffHours = (now.getTime() - chatDate.getTime()) / (1000 * 60 * 60);
+      // Zero out the time of chatDate
+      const chatDay = new Date(chatDate.getFullYear(), chatDate.getMonth(), chatDate.getDate());
+      const diffDays = Math.floor((today.getTime() - chatDay.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (diffHours < 24) {
+      if (diffDays === 0) {
         groups["Today"].push(chat);
-      } else if (diffHours < 48) {
+      } else if (diffDays === 1) {
         groups["Yesterday"].push(chat);
-      } else if (diffHours < 24 * 7) {
+      } else if (diffDays >= 2 && diffDays < 7) {
         groups["Last 7 Days"].push(chat);
-      } else if (diffHours < 24 * 30) {
+      } else if (diffDays >= 7 && diffDays < 30) {
         groups["Last 30 Days"].push(chat);
       }
     });
 
-    // Sort chats within each group by created_at
+    // Sort chats within each group by created_at descending
     Object.keys(groups).forEach(key => {
       groups[key as keyof ChatGroup].sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
