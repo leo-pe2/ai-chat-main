@@ -264,32 +264,35 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, onMFAVerified }) => {
             </form>
           )}
 
-          <div className="mt-4 text-center">
-            {mode === 'login' ? (
-              <p>
-                Not signed up yet?{' '}
-                <button 
-                  onClick={() => {
-                    setMode('signup');
-                    setSignupStep('names');
-                  }} 
-                  className="text-blue-500 underline"
-                >
-                  Sign Up
-                </button>
-              </p>
-            ) : (
-              <p>
-                Already have an account?{' '}
-                <button 
-                  onClick={() => setMode('login')} 
-                  className="text-blue-500 underline"
-                >
-                  Log In
-                </button>
-              </p>
-            )}
-          </div>
+          {/* Remove the "Not signed up yet?" section when MFA prompt is visible */}
+          {!showMfaPrompt && (
+            <div className="mt-4 text-center">
+              {mode === 'login' ? (
+                <p>
+                  Not signed up yet?{' '}
+                  <button 
+                    onClick={() => {
+                      setMode('signup');
+                      setSignupStep('names');
+                    }} 
+                    className="text-blue-500 underline"
+                  >
+                    Sign Up
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Already have an account?{' '}
+                  <button 
+                    onClick={() => setMode('login')} 
+                    className="text-blue-500 underline"
+                  >
+                    Log In
+                  </button>
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
