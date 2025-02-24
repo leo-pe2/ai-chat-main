@@ -147,11 +147,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4">
           {Object.entries(groupedChats).map(([groupName, groupChats]) => 
             groupChats.length > 0 && (
-              <div key={groupName} className="space-y-2">
-                <h3 className="text-sm font-medium text-gray-500">{groupName}</h3>
+              <div key={groupName} className="mb-6"> {/* Increased spacing between groups */}
+                <h3 className="text-sm font-medium text-black">{groupName}</h3>
                 {groupChats.map((chat: ChatType) => (
                   // Group container added for hover effects
                   <div
@@ -161,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
                       onSelectChat(chat.id);
                     }}
                     className={`group flex justify-between items-center px-3 py-2 rounded-lg transition-all duration-300 ease-in-out cursor-pointer ${
-                      chat.id === activeChatId ? 'bg-gray-300/50' : 'bg-transparent hover:bg-gray-300/50'
+                      chat.id === activeChatId ? 'bg-gray-300/50' : 'bg-transparent hover:bg-gray-200/50'
                     }`}
                   >
                     <div className="flex-1 overflow-hidden pr-2">
