@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/auth';
 import { EnrollMFA } from '../MFA/EnrollMFA';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfilePopupProps {
   user: any; // Adjust type as needed
@@ -15,6 +16,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
   const [showEnrollMFA, setShowEnrollMFA] = useState(false);
   const [aalLevel, setAalLevel] = useState('aal1'); // Default
   const [hasMFA, setHasMFA] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Force refresh to get updated AAL value.
@@ -85,9 +87,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
     if (error) {
       setMessage(`Error signing out: ${error.message}`);
     } else {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Current session after sign out:', session);
-      onClose();
+      navigate('/');
     }
   };
 

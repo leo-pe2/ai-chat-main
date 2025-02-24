@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom'; // NEW import
 import { getUserChats } from '../../../services/backendapi';
 import { supabase } from '../../../services/auth'; // New import for database update
 import ConfirmDeletePopup from './ConfirmDeletePopup'; // New import
@@ -32,6 +33,15 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [chatToDelete, setChatToDelete] = useState<ChatType | null>(null); // New state
   const [activeChatId, setActiveChatId] = useState<string | null>(null); // New state to track active chat
+
+  const { chatId: routeChatId } = useParams<{ chatId: string }>(); // NEW: retrieve route chatId
+
+  // NEW: update activeChatId from URL if not already selected
+  useEffect(() => {
+    if (routeChatId && routeChatId !== activeChatId) {
+      setActiveChatId(routeChatId);
+    }
+  }, [routeChatId, activeChatId]);
 
   useEffect(() => {
     if (!user || !mfaVerified) { // only fetch chats when MFA is verified
