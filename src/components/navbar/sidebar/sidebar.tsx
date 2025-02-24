@@ -174,18 +174,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
                       chat.id === activeChatId ? 'bg-gray-300/50' : 'bg-transparent hover:bg-gray-200/50'
                     }`}
                   >
-                    <div className="flex-1 overflow-hidden pr-2">
+                    <div className="flex-1 overflow-hidden pr-0"> {/* Changed pr-2 to pr-0 */}
                       <span 
                         className="block whitespace-nowrap overflow-hidden" 
-                        style={{
-                          fontSize: '14px',
-                          WebkitMaskImage: chat.id === activeChatId 
-                            ? 'linear-gradient(to right, black 70%, transparent)' 
-                            : 'linear-gradient(to right, black 70%, transparent)',
-                          maskImage: chat.id === activeChatId 
-                            ? 'linear-gradient(to right, black 70%, transparent)' 
-                            : 'linear-gradient(to right, black 70%, transparent)'
-                        }}
+                        style={{ fontSize: '14px' }}
                       >
                         {chat.title?.replace(/"/g, '') || new Date(chat.created_at).toLocaleTimeString()}
                       </span>
@@ -195,11 +187,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
                         e.stopPropagation();
                         setChatToDelete(chat);
                       }}
-                      className={`flex-shrink-0 ml-2 ${chat.id === activeChatId ? 'visible' : 'invisible group-hover:visible'}`}
+                      className={`flex-shrink-0 ml-2 ${chat.id === activeChatId ? 'block' : 'hidden group-hover:block'}`}
                     >
                       <img
-                        width="20"
-                        height="20"
+                        width="19"
+                        height="19"
                         src="https://cdn-icons-png.flaticon.com/128/15691/15691674.png"
                         alt="delete"
                       />
