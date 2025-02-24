@@ -31,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
   const [chats, setChats] = useState<ChatType[]>([]);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [chatToDelete, setChatToDelete] = useState<ChatType | null>(null); // New state
+  const [activeChatId, setActiveChatId] = useState<string | null>(null); // New state to track active chat
 
   useEffect(() => {
     if (!user || !mfaVerified) { // only fetch chats when MFA is verified
@@ -139,21 +140,39 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
               <div key={groupName} className="space-y-2">
                 <h3 className="text-sm font-medium text-gray-500">{groupName}</h3>
                 {groupChats.map((chat: ChatType) => (
-                  // Make the entire container clickable
+                  // Group container added for hover effects
                   <div
                     key={chat.id}
-                    onClick={() => onSelectChat(chat.id)}
-                    className="flex justify-between items-center bg-white px-3 py-2 rounded-lg shadow hover:bg-gray-200 cursor-pointer"
+                    onClick={() => {
+                      setActiveChatId(chat.id); // Set active chat
+                      onSelectChat(chat.id);
+                    }}
+                    className={`group flex justify-between items-center px-3 py-2 rounded-lg transition-all duration-300 ease-in-out cursor-pointer ${
+                      chat.id === activeChatId ? 'bg-gray-300/50' : 'bg-transparent hover:bg-gray-300/50'
+                    }`}
                   >
-                    <span>
-                      {chat.title?.replace(/"/g, '') || new Date(chat.created_at).toLocaleTimeString()}
-                    </span>
+                    <div className="flex-1 overflow-hidden pr-2">
+                      <span 
+                        className="block whitespace-nowrap overflow-hidden" 
+                        style={{
+                          fontSize: '14px',
+                          WebkitMaskImage: chat.id === activeChatId 
+                            ? 'linear-gradient(to right, black 70%, transparent)' 
+                            : 'linear-gradient(to right, black 70%, transparent)',
+                          maskImage: chat.id === activeChatId 
+                            ? 'linear-gradient(to right, black 70%, transparent)' 
+                            : 'linear-gradient(to right, black 70%, transparent)'
+                        }}
+                      >
+                        {chat.title?.replace(/"/g, '') || new Date(chat.created_at).toLocaleTimeString()}
+                      </span>
+                    </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setChatToDelete(chat);
                       }}
-                      className="flex-shrink-0 ml-2"
+                      className={`flex-shrink-0 ml-2 ${chat.id === activeChatId ? 'visible' : 'invisible group-hover:visible'}`}
                     >
                       <img
                         width="20"
