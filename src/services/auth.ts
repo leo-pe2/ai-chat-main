@@ -1,6 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Use import.meta.env to access environment variables in a Vite project
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 
@@ -8,12 +7,9 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Supabase credentials are missing in environment variables.');
 }
 
-// Initialize your Supabase client
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
-// =====================================================================
-// Sign up a new user with first name, last name, email and password
-// =====================================================================
+
 export async function signUpWithEmail(
   firstName: string,
   lastName: string,
@@ -36,9 +32,7 @@ export async function signUpWithEmail(
   return data;
 }
 
-// =====================================================================
-// Sign in a user with email and password
-// =====================================================================
+
 export async function signInWithEmail(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -50,21 +44,13 @@ export async function signInWithEmail(email: string, password: string) {
   return data;
 }
 
-// =====================================================================
-// Logout and Reset MFA
-// =====================================================================
-// This function unenrolls any enrolled MFA (TOTP) factors and then signs
-// the user out. On the next login, the user will start with an unverified factor (aal1),
-// and the MFA challenge will be triggered.
+
 export async function logoutAndResetMFA(): Promise<void> {
   try {
-    // List currently enrolled MFA factors
     const { data, error: listError } = await supabase.auth.mfa.listFactors();
     if (listError) {
       console.error('Error listing MFA factors:', listError.message);
-      // Optionally, continue even if listing fails
     } else if (data && data.totp) {
-      // Loop through each TOTP factor and unenroll it
       for (const factor of data.totp) {
         const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
         if (unenrollError) {
@@ -74,7 +60,6 @@ export async function logoutAndResetMFA(): Promise<void> {
         }
       }
     }
-    // Finally, sign the user out
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) {
       console.error('Error signing out:', signOutError.message);
@@ -86,9 +71,7 @@ export async function logoutAndResetMFA(): Promise<void> {
   }
 }
 
-// =====================================================================
-// Verify MFA code and upgrade assurance level (aal2)
-// =====================================================================
+
 export async function verifyMfa({
   code,
   factorId,
@@ -101,6 +84,4 @@ export async function verifyMfa({
   return data;
 }
 
-// =====================================================================
-// You can add more authentication-related functions below...
-// =====================================================================
+

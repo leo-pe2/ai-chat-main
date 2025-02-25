@@ -1,4 +1,3 @@
-// Updated to use import.meta.env for Vite (client-side)
 interface EnvConfig {
   OPENAI_API_KEY: string | undefined;
   ANTHROPIC_API_KEY: string | undefined;

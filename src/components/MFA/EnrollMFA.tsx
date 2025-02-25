@@ -8,12 +8,11 @@ interface EnrollMFAProps {
 
 export function EnrollMFA({ onEnrolled, onCancelled }: EnrollMFAProps) {
   const [factorId, setFactorId] = useState('');
-  const [qr, setQR] = useState(''); // holds the QR code SVG
-  const [secret, setSecret] = useState(''); // plain text secret if scanning fails
+  const [qr, setQR] = useState(''); 
+  const [secret, setSecret] = useState(''); 
   const [verifyCode, setVerifyCode] = useState('');
   const [error, setError] = useState('');
 
-  // Enroll MFA: get initial QR code, secret, and factorId
   useEffect(() => {
     (async () => {
       setError('');
@@ -22,7 +21,6 @@ export function EnrollMFA({ onEnrolled, onCancelled }: EnrollMFAProps) {
         setError(error.message);
         return;
       }
-      // Assume data.totp contains 'qr_code' and 'secret'
       setFactorId(data.id);
       setQR(data.totp.qr_code);
       setSecret(data.totp.secret);
@@ -66,7 +64,6 @@ export function EnrollMFA({ onEnrolled, onCancelled }: EnrollMFAProps) {
         return;
       }
       
-      // Force a session refresh so the JWT includes the updated AAL
       const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
       if (refreshError) {
         setError(refreshError.message);

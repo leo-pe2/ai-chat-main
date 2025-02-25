@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
 import ErrorBoundary from './components/Error/ErrorBoundary';
-import { BrowserRouter } from 'react-router-dom';  // Import BrowserRouter
+import { BrowserRouter } from 'react-router-dom';  
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Failed to find the root element');

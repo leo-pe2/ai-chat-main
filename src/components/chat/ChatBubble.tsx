@@ -23,7 +23,6 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Automatische Höhenanpassung, wenn sich der Inhalt ändert
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -49,7 +48,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
       }`}>
         <textarea
           ref={textareaRef}
-          rows={1} // Initial nur eine Zeile anzeigen
+          rows={1} 
           placeholder={user ? "Type your message..." : "Please login to use"}
           value={inputValue}
           onChange={onInputChange}
@@ -63,7 +62,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
             overflowWrap: 'break-word',
             lineHeight: '1.4',
             outline: 'none',
-            boxSizing: 'border-box', // Berücksichtigt Padding und Border
+            boxSizing: 'border-box',
           }}
         />
         <div className="mt-2 flex justify-between items-center">

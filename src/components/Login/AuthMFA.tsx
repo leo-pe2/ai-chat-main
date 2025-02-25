@@ -12,7 +12,6 @@ const AuthMFA: React.FC<AuthMFAProps> = ({ onVerified }) => {
   const onSubmitClicked = async () => {
     setError('');
     try {
-      // Fetch the available MFA factors (we expect at least one TOTP factor)
       const factors = await supabase.auth.mfa.listFactors();
       if (factors.error) throw factors.error;
 
@@ -20,7 +19,6 @@ const AuthMFA: React.FC<AuthMFAProps> = ({ onVerified }) => {
       if (!totpFactor) throw new Error('No TOTP factors found!');
       const factorId = totpFactor.id;
 
-      // Create a challenge for the chosen factor
       const challenge = await supabase.auth.mfa.challenge({ factorId });
       if (challenge.error) {
         setError(challenge.error.message);
@@ -28,7 +26,6 @@ const AuthMFA: React.FC<AuthMFAProps> = ({ onVerified }) => {
       }
       const challengeId = challenge.data.id;
 
-      // Verify the provided code against the challenge
       const verifyRes = await supabase.auth.mfa.verify({
         factorId,
         challengeId,

@@ -5,7 +5,7 @@ import { supabase } from '../../services/auth';
 
 interface LoginPopupProps {
   onClose: () => void;
-  onMFAVerified?: () => void; // new prop for gating full access after MFA
+  onMFAVerified?: () => void; 
 }
 
 type SignupStep = 'names' | 'credentials';
@@ -264,7 +264,6 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, onMFAVerified }) => {
             </form>
           )}
 
-          {/* Remove the "Not signed up yet?" section when MFA prompt is visible */}
           {!showMfaPrompt && (
             <div className="mt-4 text-center">
               {mode === 'login' ? (

@@ -20,11 +20,10 @@ export async function searchTavily(query: string): Promise<string> {
       })
     });
     const data = await response.json();
-    console.log("Tavily raw response:", data); // Debug log full response
+    console.log("Tavily raw response:", data); 
     if (data.answer) {
       return data.answer;
     } else if (data.results && data.results.length > 0) {
-      // Concatenate every "content" from the results array
       return data.results.map((result: any) => result.content).join("\n");
     }
     return "";

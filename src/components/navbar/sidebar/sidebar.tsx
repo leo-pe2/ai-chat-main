@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom'; // NEW import
+import { useParams } from 'react-router-dom'; 
 import { getUserChats } from '../../../services/backendapi';
-import { supabase } from '../../../services/auth'; // New import for database update
-import ConfirmDeletePopup from './ConfirmDeletePopup'; // New import
+import { supabase } from '../../../services/auth'; 
+import ConfirmDeletePopup from './ConfirmDeletePopup'; 
 
 interface SidebarProps {
   open: boolean;
@@ -11,7 +11,7 @@ interface SidebarProps {
   onSelectChat: (chatId: string) => Promise<void>;
   onNewChat: () => Promise<void>;
   chatRefresh: number;
-  mfaVerified?: boolean; // <-- new prop
+  mfaVerified?: boolean;
 }
 
 interface ChatGroup {
@@ -25,18 +25,16 @@ interface ChatType {
   id: string;
   title?: string;
   created_at: string;
-  // ...any other fields...
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, onNewChat, chatRefresh, mfaVerified }) => {
   const [chats, setChats] = useState<ChatType[]>([]);
   const [currentTime, setCurrentTime] = useState(Date.now());
-  const [chatToDelete, setChatToDelete] = useState<ChatType | null>(null); // New state
-  const [activeChatId, setActiveChatId] = useState<string | null>(null); // New state to track active chat
+  const [chatToDelete, setChatToDelete] = useState<ChatType | null>(null); 
+  const [activeChatId, setActiveChatId] = useState<string | null>(null); 
 
-  const { chatId: routeChatId } = useParams<{ chatId: string }>(); // NEW: retrieve route chatId
+  const { chatId: routeChatId } = useParams<{ chatId: string }>();
 
-  // NEW: update activeChatId from URL if not already selected
   useEffect(() => {
     if (routeChatId && routeChatId !== activeChatId) {
       setActiveChatId(routeChatId);
@@ -44,21 +42,19 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
   }, [routeChatId, activeChatId]);
 
   useEffect(() => {
-    if (!user || !mfaVerified) { // only fetch chats when MFA is verified
+    if (!user || !mfaVerified) { 
       setChats([]);
       return;
     }
     getUserChats(user.id).then((data) => setChats(data)).catch(console.error);
   }, [user, chatRefresh, mfaVerified]);
 
-  // Remove the previous interval effect and replace with a timeout that updates at midnight
   useEffect(() => {
     const scheduleMidnightUpdate = () => {
       const now = new Date();
       const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
       const msUntilMidnight = tomorrow.getTime() - now.getTime();
       return setTimeout(() => {
-        // Update currentTime once at midnight to trigger re-grouping
         setCurrentTime(Date.now());
       }, msUntilMidnight);
     };
@@ -75,12 +71,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
     };
 
     const now = new Date();
-    // Zero out hours for today's date
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     chats.forEach((chat) => {
       const chatDate = new Date(chat.created_at);
-      // Zero out the time of chatDate
       const chatDay = new Date(chatDate.getFullYear(), chatDate.getMonth(), chatDate.getDate());
       const diffDays = Math.floor((today.getTime() - chatDay.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -105,7 +99,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
     return groups;
   }, [chats, currentTime]);
 
-  // Updated deletion handler: mark chat as not visible in the database.
   const handleConfirmDelete = async () => {
     if (chatToDelete) {
       try {
@@ -119,7 +112,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
       } catch (err) {
         console.error('Unexpected error while deleting chat:', err);
       }
-      // Remove from local state so it no longer appears.
       setChats(prev => prev.filter(chat => chat.id !== chatToDelete.id));
       setChatToDelete(null);
     }
@@ -128,7 +120,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
   return (
     <>
       <div className={`fixed inset-y-0 left-0 w-64 bg-gray-100 text-black flex flex-col transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        {/* Fixed header */}
         <div className="p-4 border-b border-gray-100">
           <div className="flex justify-between items-center">
             <button 
@@ -156,25 +147,23 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, user, onSelectChat, on
           </div>
         </div>
 
-        {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto p-4">
           {Object.entries(groupedChats).map(([groupName, groupChats]) => 
             groupChats.length > 0 && (
-              <div key={groupName} className="mb-6"> {/* Increased spacing between groups */}
+              <div key={groupName} className="mb-6"> 
                 <h3 className="text-sm font-medium text-black">{groupName}</h3>
                 {groupChats.map((chat: ChatType) => (
-                  // Group container added for hover effects
                   <div
                     key={chat.id}
                     onClick={() => {
-                      setActiveChatId(chat.id); // Set active chat
+                      setActiveChatId(chat.id); 
                       onSelectChat(chat.id);
                     }}
                     className={`group flex justify-between items-center px-3 py-2 rounded-lg transition-all duration-300 ease-in-out cursor-pointer ${
                       chat.id === activeChatId ? 'bg-gray-300/50' : 'bg-transparent hover:bg-gray-200/50'
                     }`}
                   >
-                    <div className="flex-1 overflow-hidden pr-0"> {/* Changed pr-2 to pr-0 */}
+                    <div className="flex-1 overflow-hidden pr-0"> 
                       <span 
                         className="block whitespace-nowrap overflow-hidden" 
                         style={{ fontSize: '14px' }}

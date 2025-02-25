@@ -1,6 +1,6 @@
 export async function sendDiscordError(errorText: string): Promise<void> {
   const webhookUrl = process.env.REACT_APP_DISCORD_WEBHOOK;
-  console.log('Discord webhook URL:', webhookUrl); // Added debug log
+  console.log('Discord webhook URL:', webhookUrl); 
   if (!webhookUrl) {
     console.error("Discord webhook URL is not defined");
     return;

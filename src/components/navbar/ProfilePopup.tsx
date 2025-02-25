@@ -4,7 +4,7 @@ import { EnrollMFA } from '../MFA/EnrollMFA';
 import { useNavigate } from 'react-router-dom';
 
 interface ProfilePopupProps {
-  user: any; // Adjust type as needed
+  user: any;
   onClose: () => void;
 }
 
@@ -14,12 +14,11 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
   const [message, setMessage] = useState('');
   const [activeCategory, setActiveCategory] = useState<CategoryType>('General');
   const [showEnrollMFA, setShowEnrollMFA] = useState(false);
-  const [aalLevel, setAalLevel] = useState('aal1'); // Default
+  const [aalLevel, setAalLevel] = useState('aal1'); 
   const [hasMFA, setHasMFA] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Force refresh to get updated AAL value.
     (async () => {
       const { data: refreshed, error } = await supabase.auth.refreshSession();
       console.log('Refreshed session:', refreshed, error);
@@ -28,7 +27,6 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
         setAalLevel(session.user.app_metadata.aal);
       }
     })();
-    // Listen to auth state changes.
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state change event:', event, session);
       if (session?.user?.app_metadata?.aal) {
@@ -42,7 +40,6 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
 
   useEffect(() => {
     const checkMFAStatus = async () => {
-      // First, get the current session.
       const sessionResp = await supabase.auth.getSession();
       if (!sessionResp.data.session) {
         console.warn("No auth session available; skipping MFA check.");
@@ -59,7 +56,6 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
 
     checkMFAStatus();
     
-    // Subscribe to auth changes.
     const { data: authListener } = supabase.auth.onAuthStateChange(() => {
       checkMFAStatus();
     });
@@ -107,9 +103,7 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-xl shadow-lg w-[700px] min-h-[500px] flex"
       >
-        {/* Left Sidebar */}
         <div className="w-1/4 border-r border-gray-200 p-4 flex flex-col justify-between">
-          {/* Categories */}
           <div className="space-y-2">
             {categories.map((category) => (
               <button
@@ -126,7 +120,6 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
             ))}
           </div>
 
-          {/* Sign Out Button */}
           <button 
             onClick={handleSignOut}
             className="w-full px-4 py-2 mt-4 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
@@ -135,7 +128,6 @@ const ProfilePopup: React.FC<ProfilePopupProps> = ({ user, onClose }) => {
           </button>
         </div>
 
-        {/* Right Content */}
         <div className="flex-1 p-8">
           <h2 className="text-2xl font-bold mb-6">{activeCategory}</h2>
           

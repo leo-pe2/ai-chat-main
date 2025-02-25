@@ -26,7 +26,6 @@ interface Message {
   text: string;
 }
 
-// Custom CodeBlock component using react-syntax-highlighter and a copy button
 const CodeBlock = ({ inline, className, children, ...props }: { inline?: boolean; className?: string; children?: React.ReactNode }) => {
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : '';
@@ -62,28 +61,28 @@ const CodeBlock = ({ inline, className, children, ...props }: { inline?: boolean
           ...tomorrow,
           'pre[class*="language-"]': {
             ...tomorrow['pre[class*="language-"]'],
-            background: '#fafafa', // Much lighter background
+            background: '#fafafa', 
             borderRadius: '0 0 0.5rem 0.5rem',
             margin: 0,
             fontSize: '0.875rem',
           },
           'code[class*="language-"]': {
             ...tomorrow['code[class*="language-"]'],
-            color: '#374151', // darker text color
-            textShadow: 'none', // remove text shadow
-            fontSize: '0.875rem', // 14px
+            color: '#374151', 
+            textShadow: 'none', 
+            fontSize: '0.875rem', 
           },
           'token.keyword': {
             ...tomorrow['token.keyword'],
-            color: '#2563eb', // brighter blue
+            color: '#2563eb', 
           },
           'token.string': {
             ...tomorrow['token.string'],
-            color: '#50A14F', // brighter green
+            color: '#50A14F', 
           },
           'token.function': {
             ...tomorrow['token.function'],
-            color: '#C916C9', // brighter purple
+            color: '#C916C9',
           }
         }}
         {...props}
@@ -104,16 +103,16 @@ const LandingPage: React.FC = () => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [loginPopupActive, setLoginPopupActive] = useState(false);
   const [profilePopupActive, setProfilePopupActive] = useState(false);
-  const [user, setUser] = useState<any>(null); // New state for auth user
-  const [resetPasswordPopupActive, setResetPasswordPopupActive] = useState(false); // New state for reset password popup
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null); // New state
+  const [user, setUser] = useState<any>(null); 
+  const [resetPasswordPopupActive, setResetPasswordPopupActive] = useState(false); 
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null); 
   const conversationEndRef = useRef<HTMLDivElement>(null);
-  const [chatRefresh, setChatRefresh] = useState(0); // Re-add chatRefresh state
+  const [chatRefresh, setChatRefresh] = useState(0); 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingMFA, setLoadingMFA] = useState(true);
   const [mfaVerified, setMfaVerified] = useState(false);
-  const [mfaCode, setMfaCode] = useState(''); // new state for MFA input
-  const [mfaError, setMfaError] = useState(''); // new state for MFA error message
+  const [mfaCode, setMfaCode] = useState(''); 
+  const [mfaError, setMfaError] = useState(''); 
   const navigate = useNavigate();
   const { chatId: routeChatId } = useParams<{ chatId: string }>();
   const location = useLocation();
@@ -149,9 +148,7 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  // Updated new chat creation handler to prevent creating multiple invisible "New Chat" chats
   const handleNewChat = async () => {
-    // if a chat already exists with only the initial developer message, don't create a new one
     if (
       currentChatId &&
       conversation.length === 1 &&
@@ -161,7 +158,7 @@ const LandingPage: React.FC = () => {
       console.warn("A new chat is already in progress.");
       return;
     }
-    const newChatId = await createNewChat('New Chat', false); // changed from true to false
+    const newChatId = await createNewChat('New Chat', false); 
     if (!newChatId) {
       console.error('Failed to create a new chat.');
     } else {
@@ -174,17 +171,13 @@ const LandingPage: React.FC = () => {
     const trimmedMessage = inputValue.trim();
     if (!trimmedMessage) return;
 
-    // Determine the count of user messages (excluding developer messages)
     const userMessagesCount = conversation.filter(msg => msg.sender === 'user').length;
 
-    // Ensure a chat is visible when the user sends a message.
     if (!currentChatId) {
-      // Create a new chat with visible set to true.
       const generatedTitle = await generateChatTitle(trimmedMessage);
       const newChatId = await createNewChat(generatedTitle, true);
       if (!newChatId) return;
     } else if (userMessagesCount === 0 && currentChatId) {
-      // Update the existing chat (title) to be visible if no user messages yet.
       const generatedTitle = await generateChatTitle(trimmedMessage);
       try {
         await updateChatTitle(currentChatId, generatedTitle);
@@ -193,7 +186,6 @@ const LandingPage: React.FC = () => {
       }
     }
 
-    // Append user message and update chat content
     const userMessage: Message = { sender: 'user', text: trimmedMessage };
     const updatedConversation = [...conversation, userMessage];
     setConversation(updatedConversation);
@@ -221,7 +213,6 @@ const LandingPage: React.FC = () => {
       }
       
       console.log("Sending prompt to model:", selectedModel, modelInput);
-      // Map conversation history: convert 'bot' to 'assistant'
       const historyForModel = updatedConversation.map(msg => ({
         sender: msg.sender === 'bot' ? 'assistant' : 'user',
         text: msg.text,
@@ -249,7 +240,6 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  // Updated handler: fetch chat and update URL
   const onSelectChat = async (chatId: string) => {
     console.log('onSelectChat called with chatId:', chatId);
     if (!chatId) {
@@ -269,7 +259,6 @@ const LandingPage: React.FC = () => {
       setCurrentChatId(chat.id);
       let content = Array.isArray(chat.content) ? chat.content : [];
       setConversation(content);
-      // Update URL with chatId
       navigate(`/chat/${chat.id}`);
       
     } catch (error) {
@@ -282,20 +271,18 @@ const LandingPage: React.FC = () => {
   }, [conversation]);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then((res) => {
       const currentUser = res.data.session?.user || null;
       setUser(currentUser);
-      if (!currentUser) { // Clear conversation if signed out
+      if (!currentUser) { 
         setConversation([]);
         setCurrentChatId(null);
       }
     });
-    // Subscribe to auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user || null;
       setUser(currentUser);
-      if (!currentUser) { // Clear conversation if signed out
+      if (!currentUser) { 
         setConversation([]);
         setCurrentChatId(null);
       }
@@ -306,15 +293,12 @@ const LandingPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Check if URL hash indicates a recovery action
     if (window.location.hash.includes('type=recovery')) {
       setResetPasswordPopupActive(true);
-      // Optionally clear the hash
       window.location.hash = '';
     }
   }, []);
 
-  // New effect to subscribe to chat table updates for this user using Supabase channels
   useEffect(() => {
     if (!user) return;
     const updateChannel = supabase.channel(`chats_updates_${user.id}`)
@@ -338,7 +322,6 @@ const LandingPage: React.FC = () => {
     };
   }, [user]);
 
-  // Realtime subscription for INSERT events on chats
   useEffect(() => {
     if (!user) return;
     const insertChannel = supabase.channel(`chats_inserts_${user.id}`)
@@ -352,7 +335,6 @@ const LandingPage: React.FC = () => {
         },
         (payload: any) => {
           console.log("Realtime INSERT received:", payload);
-          // If no chat is selected and the new chat is empty, set it as current
           if (!currentChatId && Array.isArray(payload.new.content) && payload.new.content.length === 0) {
             setCurrentChatId(payload.new.id);
           }
@@ -369,16 +351,13 @@ const LandingPage: React.FC = () => {
   const checkMfa = async () => {
     setLoadingMFA(true);
     try {
-      // First, check if user has MFA enabled
       const factorsResponse = await supabase.auth.mfa.listFactors();
       if (factorsResponse.error) {
         console.error("Error listing MFA factors:", factorsResponse.error.message);
         setMfaVerified(false);
       } else if (!factorsResponse.data.totp || factorsResponse.data.totp.length === 0) {
-        // User does not have MFA enabled, so mark as verified
         setMfaVerified(true);
       } else {
-        // User has MFA enabled, check the assurance level
         const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
         if (error || !data) {
           console.error('Error or no MFA data:', error);
@@ -399,24 +378,20 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  // New handler for MFA submit
   const handleMfaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // List current MFA factors; expect at least one TOTP factor
     const factors = await supabase.auth.mfa.listFactors();
     if (factors.error || !factors.data.totp.length) {
       setMfaError("No MFA factors found.");
       return;
     }
     const totpFactor = factors.data.totp[0];
-    // Create a challenge for the chosen factor
     const challengeResult = await supabase.auth.mfa.challenge({ factorId: totpFactor.id });
     if (challengeResult.error || !challengeResult.data) {
       setMfaError(challengeResult.error?.message || "Failed to create challenge.");
       return;
     }
     const challengeId = challengeResult.data.id;
-    // Verify the provided code using the real factorId and challengeId
     const { data, error } = await supabase.auth.mfa.verify({
       factorId: totpFactor.id,
       challengeId,
@@ -432,18 +407,14 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     checkMfa();
-    // ...existing useEffect code...
   }, []);
 
-  // Load chat from URL if exists on mount
   useEffect(() => {
     if (routeChatId) {
       onSelectChat(routeChatId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeChatId]);
 
-  // NEW: Clear chat state when URL is "/"
   React.useEffect(() => {
     if (location.pathname === '/') {
       setCurrentChatId(null);
@@ -451,7 +422,6 @@ const LandingPage: React.FC = () => {
     }
   }, [location.pathname]);
 
-  // Add a loading guard to avoid showing MFA during check
   return loadingMFA ? (
     <div className="min-h-screen flex items-center justify-center">
       Loading...
@@ -466,9 +436,9 @@ const LandingPage: React.FC = () => {
           setSelectedModel={setSelectedModel}
           loginPopupActive={loginPopupActive}
           setLoginPopupActive={setLoginPopupActive}
-          user={user}                           // Pass user
-          setProfilePopupActive={setProfilePopupActive}  // For profile popup toggle
-          onNewChat={handleNewChat}  // updated: pass new chat handler
+          user={user}                           
+          setProfilePopupActive={setProfilePopupActive} 
+          onNewChat={handleNewChat} 
         />
         <Sidebar 
           open={sidebarOpen} 
@@ -477,7 +447,7 @@ const LandingPage: React.FC = () => {
           onSelectChat={onSelectChat}
           onNewChat={handleNewChat}
           chatRefresh={chatRefresh}
-          mfaVerified={mfaVerified} // <-- new prop passed
+          mfaVerified={mfaVerified} 
         />
       </header>
       
@@ -485,7 +455,7 @@ const LandingPage: React.FC = () => {
         <div className="flex justify-center">
           <div className="w-[45rem] px-4 py-12 space-y-4">
             {conversation
-              .filter(msg => msg.sender !== 'developer') // hide developer messages
+              .filter(msg => msg.sender !== 'developer') 
               .map((msg, index) => (
               <div
                 key={index}

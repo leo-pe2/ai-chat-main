@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import AiModelsMenu from './aiModelsMenu';
-import LoginPopup from '../Login/LoginPopup';  // Existing
+import LoginPopup from '../Login/LoginPopup';  
 import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
@@ -9,11 +9,11 @@ interface NavbarProps {
   sidebarOpen: boolean;
   selectedModel: string;
   setSelectedModel: React.Dispatch<React.SetStateAction<string>>;
-  loginPopupActive: boolean;  // Existing
-  setLoginPopupActive: React.Dispatch<React.SetStateAction<boolean>>;  // Existing
-  user: any;  // New prop: current authenticated user (null if not signed in)
-  setProfilePopupActive: React.Dispatch<React.SetStateAction<boolean>>; // New
-  onNewChat: () => void; // New prop for creating a new chat
+  loginPopupActive: boolean;  
+  setLoginPopupActive: React.Dispatch<React.SetStateAction<boolean>>;  
+  user: any;  
+  setProfilePopupActive: React.Dispatch<React.SetStateAction<boolean>>; 
+  onNewChat: () => void; 
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -28,16 +28,13 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // NEW: center dropdown state
   const [centerDropdownOpen, setCenterDropdownOpen] = useState(false);
-  // NEW: state to track current center selection
   const [centerSelection, setCenterSelection] = useState("Home");
   
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const toggleModelMenu = () => setMenuOpen(!menuOpen);
-  // NEW: toggle center dropdown
   const toggleCenterDropdown = () => setCenterDropdownOpen(!centerDropdownOpen);
 
   const getInitials = (user: any) => {
@@ -74,7 +71,6 @@ const Navbar: React.FC<NavbarProps> = ({
                 />
               </button>
               
-              {/* Only show new chat button when sidebar is closed */}
               <button
                 onClick={onNewChat}
                 className="px-2 py-2 rounded-lg transition-all duration-300 ease-in-out hover:bg-gray-300/50"
@@ -115,7 +111,6 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
         
-        {/* Updated: Center dropdown positioned in the navbar center showing current selection */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <div 
             className="relative flex items-center cursor-pointer px-2 py-2 rounded-lg hover:bg-gray-300/50"

@@ -5,10 +5,8 @@ import { config, validateConfig } from '../config/env.config';
 import { supabase } from './supabaseClient';
 
 
-// Validate environment variables before initializing clients
 validateConfig();
 
-// openai model instructions
 const PERSONALITY_PROMPT = `You are a helpful assistant that answers questions and provides information. You are friendly, professional, and knowledgeable. You are always ready to help and provide accurate information. You are an expert in coding and academics. `;
 
 export async function getAIBackendResponse(
@@ -42,7 +40,7 @@ export async function getUserChats(userId: string): Promise<any[]> {
 export async function updateChatContent(chatId: string, conversation: any[]): Promise<void> {
   const { error } = await supabase
     .from('chats')
-    .update({ content: conversation }) // Assumes a new 'content' column of type JSON exists
+    .update({ content: conversation }) 
     .eq('id', chatId);
   if (error) {
     throw error;
@@ -50,7 +48,6 @@ export async function updateChatContent(chatId: string, conversation: any[]): Pr
 }
 
 export async function updateChatTitle(chatId: string, title: string): Promise<void> {
-  // Update title _and_ set the chat to visible.
   const { error } = await supabase
     .from('chats')
     .update({ title, is_visible: true })
@@ -63,12 +60,11 @@ export async function updateChatTitle(chatId: string, title: string): Promise<vo
 export async function getChatById(chatId: string): Promise<any> {
   const { data, error } = await supabase
     .from('chats')
-    .select('*')  // remove the is_visible filter here
+    .select('*')  
     .eq('id', chatId)
-    .maybeSingle();  // use maybeSingle() to return null if no row found
+    .maybeSingle();  
 
-  console.log('getChatById response:', { data, error }); // More detailed logging
-  
+  console.log('getChatById response:', { data, error });
   if (error) {
     console.error('getChatById error:', error);
     throw error;
@@ -76,7 +72,6 @@ export async function getChatById(chatId: string): Promise<any> {
   return data;
 }
 
-// Function to delete chat by setting is_visible to false
 export async function deleteChatById(chatId: string): Promise<void> {
   const { error } = await supabase.from('chats').update({ is_visible: false }).eq('id', chatId);
   if (error) {
@@ -84,7 +79,6 @@ export async function deleteChatById(chatId: string): Promise<void> {
   }
 }
 
-// Function to permanently delete old "New Chat" chats after 24 hours
 export async function deleteOldNewChats(): Promise<void> {
   const twentyFourHoursAgo = new Date();
   twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
