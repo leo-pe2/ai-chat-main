@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import AiModelsMenu from './aiModelsMenu';
 import LoginPopup from '../Login/LoginPopup';  // Existing
+import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   onToggle: () => void;
@@ -26,9 +27,18 @@ const Navbar: React.FC<NavbarProps> = ({
   onNewChat,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // NEW: center dropdown state
+  const [centerDropdownOpen, setCenterDropdownOpen] = useState(false);
+  // NEW: state to track current center selection
+  const [centerSelection, setCenterSelection] = useState("Home");
+  
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const toggleModelMenu = () => setMenuOpen(!menuOpen);
+  // NEW: toggle center dropdown
+  const toggleCenterDropdown = () => setCenterDropdownOpen(!centerDropdownOpen);
 
   const getInitials = (user: any) => {
     const firstName = user.user_metadata?.first_name || '';
@@ -104,6 +114,60 @@ const Navbar: React.FC<NavbarProps> = ({
             />
           </div>
         </div>
+        
+        {/* Updated: Center dropdown positioned in the navbar center showing current selection */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <div 
+            className="relative flex items-center cursor-pointer px-2 py-2 rounded-lg hover:bg-gray-300/50"
+            onClick={toggleCenterDropdown}
+          >
+            <img
+              width="17"
+              height="17"
+              src="/images/home.svg"
+              alt="dropdown icon"
+              className="mr-2"
+            />
+            <span>{centerSelection}</span>
+          </div>
+          {centerDropdownOpen && (
+            <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded shadow-lg z-30">
+              <div className="flex space-x-4 p-2">
+                <span 
+                  className="px-3 py-1 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => { 
+                    setCenterSelection("Home");
+                    navigate('/'); 
+                    setCenterDropdownOpen(false); 
+                  }}
+                >
+                  Home
+                </span>
+                <span 
+                  className="px-3 py-1 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => { 
+                    setCenterSelection("News");
+                    navigate('/news'); 
+                    setCenterDropdownOpen(false); 
+                  }}
+                >
+                  News
+                </span>
+                <span 
+                  className="px-3 py-1 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => { 
+                    setCenterSelection("Notes");
+                    navigate('/notes'); 
+                    setCenterDropdownOpen(false); 
+                  }}
+                >
+                  Notes
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
         {user ? (
           <button 
             onClick={() => setProfilePopupActive(true)}

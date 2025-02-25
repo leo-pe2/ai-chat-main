@@ -19,7 +19,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { generateChatTitle } from '../services/chatTitleGenerator';
 import LoadingAnimation from '../components/chat/LoadingAnimation';
 import AuthMFA from '../components/Login/AuthMFA';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 interface Message {
   sender: 'user' | 'bot' | 'developer';
@@ -116,6 +116,7 @@ const LandingPage: React.FC = () => {
   const [mfaError, setMfaError] = useState(''); // new state for MFA error message
   const navigate = useNavigate();
   const { chatId: routeChatId } = useParams<{ chatId: string }>();
+  const location = useLocation();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -441,6 +442,14 @@ const LandingPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeChatId]);
+
+  // NEW: Clear chat state when URL is "/"
+  React.useEffect(() => {
+    if (location.pathname === '/') {
+      setCurrentChatId(null);
+      setConversation([]);
+    }
+  }, [location.pathname]);
 
   // Add a loading guard to avoid showing MFA during check
   return loadingMFA ? (
