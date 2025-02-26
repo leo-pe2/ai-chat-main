@@ -1,13 +1,25 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+// Create a singleton instance
+let supabaseInstance: any = null;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Supabase credentials are missing in environment variables.');
-}
+// Function to get or create the Supabase client
+export const getSupabaseClient = () => {
+  if (supabaseInstance) return supabaseInstance;
+  
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase credentials are missing in environment variables.');
+  }
+  
+  supabaseInstance = createClient(supabaseUrl, supabaseKey);
+  return supabaseInstance;
+};
+
+// Export the singleton instance
+export const supabase: SupabaseClient = getSupabaseClient();
 
 
 export async function signUpWithEmail(

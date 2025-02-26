@@ -113,7 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({
         
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <div 
-            className="relative flex items-center cursor-pointer px-2 py-2 rounded-lg hover:bg-gray-300/50"
+            className={`relative flex items-center cursor-pointer px-2 py-2 rounded-lg ${centerDropdownOpen ? "bg-gray-300/50" : "hover:bg-gray-300/50"}`}
             onClick={toggleCenterDropdown}
           >
             <img
@@ -126,7 +126,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <span>{centerSelection}</span>
           </div>
           {centerDropdownOpen && (
-            <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded shadow-lg z-30">
+            <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-xl shadow-lg z-30">
               <div className="flex space-x-4 p-2">
                 <span 
                   className="px-3 py-1 hover:bg-gray-100 cursor-pointer"

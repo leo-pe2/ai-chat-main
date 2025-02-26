@@ -422,11 +422,7 @@ const LandingPage: React.FC = () => {
     }
   }, [location.pathname]);
 
-  return loadingMFA ? (
-    <div className="min-h-screen flex items-center justify-center">
-      Loading...
-    </div>
-  ) : (
+  return (
     <div className="min-h-screen bg-white text-black relative">
       <header className="fixed top-0 left-0 right-0 z-20">
         <Navbar
@@ -515,7 +511,8 @@ const LandingPage: React.FC = () => {
       {resetPasswordPopupActive && (
         <ResetPasswordPopup onClose={() => setResetPasswordPopupActive(false)} />
       )}
-      {user && !mfaVerified && !loginPopupActive && (
+      {/* Only show MFA prompt when loading is done AND user needs MFA verification */}
+      {!loadingMFA && user && !mfaVerified && !loginPopupActive && (
         <div className="fixed inset-0 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 z-50">
           <div className="w-full max-w-sm bg-white rounded-lg shadow-lg p-6">
             <form onSubmit={handleMfaSubmit} className="flex flex-col items-center">

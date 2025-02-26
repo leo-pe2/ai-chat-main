@@ -8,7 +8,7 @@ interface ChatBubbleProps {
   isSearchActive: boolean;
   onToggleSearch: () => void;
   loginPopupActive: boolean;
-  user: any; // User-Prop
+  user: any; 
 }
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({
