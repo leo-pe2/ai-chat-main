@@ -1,6 +1,6 @@
 # My AI Chat App Overview
 
-My AI Chat App is a full-stack application allowing users to interact with multiple AI models via a chat interface. It provides real-time chat, news browsing, and personal note-taking while integrating robust security features like user authentication and multi-factor authentication (MFA).
+My AI Chat App is a full-stack application allowing users to interact with multiple AI models via a chat interface. It provides real-time chat, news browsing, and personal note-taking while integrating robust security features like user authentication and multi-factor authentication (MFA). Note: I still code a lot with AI.
 
 ## Key Features
 
